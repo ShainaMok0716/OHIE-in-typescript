@@ -29,6 +29,8 @@ const genesisTransaction = {
 };
 const genesisBlock = new Block(0, '91a73664bc84c0baa1fc75ea6e4aa6d1d20c5df664c724e3159aefc2e1186627', '', 1465154705, [genesisTransaction], 0, 0);
 let blockchain = [genesisBlock];
+// 4 chains
+let blockchains = [[genesisBlock], [genesisBlock], [genesisBlock], [genesisBlock]];
 // the unspent txOut of genesis block is set to unspentTxOuts on startup
 let unspentTxOuts = transaction_1.processTransactions(blockchain[0].data, [], 0);
 const getBlockchain = () => blockchain;
