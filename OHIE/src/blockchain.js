@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.findBlock = exports.getDifficulty = exports.addBlockToChain = exports.replaceChain = exports.isValidBlockStructure = exports.getAccountBalance = exports.getMyUnspentTransactionOutputs = exports.handleReceivedTransaction = exports.sendTransaction = exports.getLatestBlock = exports.getUnspentTxOuts = exports.getBlockchain = exports.Block = void 0;
 const CryptoJS = require("crypto-js");
 const _ = require("lodash");
 const p2p_1 = require("./p2p");
@@ -8,7 +9,7 @@ const transactionPool_1 = require("./transactionPool");
 const util_1 = require("./util");
 const wallet_1 = require("./wallet");
 class Block {
-    constructor(index, hash, previousHash, timestamp, data, difficulty, nonce) {
+    constructor(index, hash, previousHash, timestamp, data, difficulty, nonce, chainID, rank, nextRank) {
         this.index = index;
         this.previousHash = previousHash;
         this.timestamp = timestamp;
@@ -16,6 +17,9 @@ class Block {
         this.hash = hash;
         this.difficulty = difficulty;
         this.nonce = nonce;
+        this.rank = rank;
+        this.nextRank = nextRank;
+        this.chainID = chainID;
     }
 }
 exports.Block = Block;
@@ -27,7 +31,7 @@ const genesisTransaction = {
         }],
     'id': 'e655f6a5f26dc9b4cac6e46f52336428287759cf81ef5ff10854f69d68f43fa3'
 };
-const genesisBlock = new Block(0, '91a73664bc84c0baa1fc75ea6e4aa6d1d20c5df664c724e3159aefc2e1186627', '', 1465154705, [genesisTransaction], 0, 0);
+const genesisBlock = new Block(0, '91a73664bc84c0baa1fc75ea6e4aa6d1d20c5df664c724e3159aefc2e1186627', '', 1465154705, [genesisTransaction], 0, 0, 0, 0, 0);
 let blockchain = [genesisBlock];
 // 4 chains
 let blockchains = [[genesisBlock], [genesisBlock], [genesisBlock], [genesisBlock]];
@@ -57,6 +61,7 @@ const getDifficulty = (aBlockchain) => {
         return latestBlock.difficulty;
     }
 };
+exports.getDifficulty = getDifficulty;
 const getAdjustedDifficulty = (latestBlock, aBlockchain) => {
     const prevAdjustmentBlock = aBlockchain[blockchain.length - DIFFICULTY_ADJUSTMENT_INTERVAL];
     const timeExpected = BLOCK_GENERATION_INTERVAL * DIFFICULTY_ADJUSTMENT_INTERVAL;
@@ -72,55 +77,25 @@ const getAdjustedDifficulty = (latestBlock, aBlockchain) => {
     }
 };
 const getCurrentTimestamp = () => Math.round(new Date().getTime() / 1000);
-const generateRawNextBlock = (blockData) => {
-    const previousBlock = getLatestBlock();
-    const difficulty = getDifficulty(getBlockchain());
-    const nextIndex = previousBlock.index + 1;
-    const nextTimestamp = getCurrentTimestamp();
-    const newBlock = findBlock(nextIndex, previousBlock.hash, nextTimestamp, blockData, difficulty);
-    if (addBlockToChain(newBlock)) {
-        p2p_1.broadcastLatest();
-        return newBlock;
-    }
-    else {
-        return null;
-    }
-};
-exports.generateRawNextBlock = generateRawNextBlock;
 // gets the unspent transaction outputs owned by the wallet
 const getMyUnspentTransactionOutputs = () => {
     return wallet_1.findUnspentTxOuts(wallet_1.getPublicFromWallet(), getUnspentTxOuts());
 };
 exports.getMyUnspentTransactionOutputs = getMyUnspentTransactionOutputs;
-const generateNextBlock = () => {
-    const coinbaseTx = transaction_1.getCoinbaseTransaction(wallet_1.getPublicFromWallet(), getLatestBlock().index + 1);
-    const blockData = [coinbaseTx].concat(transactionPool_1.getTransactionPool());
-    return generateRawNextBlock(blockData);
-};
-exports.generateNextBlock = generateNextBlock;
-const generatenextBlockWithTransaction = (receiverAddress, amount) => {
-    if (!transaction_1.isValidAddress(receiverAddress)) {
-        throw Error('invalid address');
-    }
-    if (typeof amount !== 'number') {
-        throw Error('invalid amount');
-    }
-    const coinbaseTx = transaction_1.getCoinbaseTransaction(wallet_1.getPublicFromWallet(), getLatestBlock().index + 1);
-    const tx = wallet_1.createTransaction(receiverAddress, amount, wallet_1.getPrivateFromWallet(), getUnspentTxOuts(), transactionPool_1.getTransactionPool());
-    const blockData = [coinbaseTx, tx];
-    return generateRawNextBlock(blockData);
-};
-exports.generatenextBlockWithTransaction = generatenextBlockWithTransaction;
 const findBlock = (index, previousHash, timestamp, data, difficulty) => {
     let nonce = 0;
+    let chainID = 0;
+    let rank = 0;
+    let nextRank = 0;
     while (true) {
         const hash = calculateHash(index, previousHash, timestamp, data, difficulty, nonce);
         if (hashMatchesDifficulty(hash, difficulty)) {
-            return new Block(index, hash, previousHash, timestamp, data, difficulty, nonce);
+            return new Block(index, hash, previousHash, timestamp, data, difficulty, nonce, chainID, rank, nextRank);
         }
         nonce++;
     }
 };
+exports.findBlock = findBlock;
 const getAccountBalance = () => {
     return wallet_1.getBalance(wallet_1.getPublicFromWallet(), getUnspentTxOuts());
 };

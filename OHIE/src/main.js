@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const express = require("express");
 const _ = require("lodash");
 const blockchain_1 = require("./blockchain");
+const miner_1 = require("./miner");
 const p2p_1 = require("./p2p");
 const transactionPool_1 = require("./transactionPool");
 const wallet_1 = require("./wallet");
@@ -46,7 +47,7 @@ const initHttpServer = (myHttpPort) => {
             res.send('data parameter is missing');
             return;
         }
-        const newBlock = blockchain_1.generateRawNextBlock(req.body.data);
+        const newBlock = miner_1.generateRawNextBlock(req.body.data);
         if (newBlock === null) {
             res.status(400).send('could not generate block');
         }
@@ -55,7 +56,7 @@ const initHttpServer = (myHttpPort) => {
         }
     });
     app.post('/mineBlock', (req, res) => {
-        const newBlock = blockchain_1.generateNextBlock();
+        const newBlock = miner_1.generateNextBlock();
         if (newBlock === null) {
             res.status(400).send('could not generate block');
         }
@@ -75,7 +76,7 @@ const initHttpServer = (myHttpPort) => {
         const address = req.body.address;
         const amount = req.body.amount;
         try {
-            const resp = blockchain_1.generatenextBlockWithTransaction(address, amount);
+            const resp = miner_1.generatenextBlockWithTransaction(address, amount);
             res.send(resp);
         }
         catch (e) {

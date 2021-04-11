@@ -22,7 +22,7 @@ class Block {
     public nextRank: number;
 
     constructor(index: number, hash: string, previousHash: string,
-                timestamp: number, data: Transaction[], difficulty: number, nonce: number) {
+                timestamp: number, data: Transaction[], difficulty: number, nonce: number, chainID:number, rank:number, nextRank:number) {
         this.index = index;
         this.previousHash = previousHash;
         this.timestamp = timestamp;
@@ -30,6 +30,9 @@ class Block {
         this.hash = hash;
         this.difficulty = difficulty;
         this.nonce = nonce;
+        this.rank = rank;
+        this.nextRank = nextRank;
+        this.chainID = chainID;
     }
 }
 
@@ -43,7 +46,7 @@ const genesisTransaction = {
 };
 
 const genesisBlock: Block = new Block(
-    0, '91a73664bc84c0baa1fc75ea6e4aa6d1d20c5df664c724e3159aefc2e1186627', '', 1465154705, [genesisTransaction], 0, 0
+    0, '91a73664bc84c0baa1fc75ea6e4aa6d1d20c5df664c724e3159aefc2e1186627', '', 1465154705, [genesisTransaction], 0, 0,0,0,0
 );
 
 let blockchain: Block[] = [genesisBlock];
@@ -95,51 +98,20 @@ const getAdjustedDifficulty = (latestBlock: Block, aBlockchain: Block[]) => {
 
 const getCurrentTimestamp = (): number => Math.round(new Date().getTime() / 1000);
 
-const generateRawNextBlock = (blockData: Transaction[]) => {
-    const previousBlock: Block = getLatestBlock();
-    const difficulty: number = getDifficulty(getBlockchain());
-    const nextIndex: number = previousBlock.index + 1;
-    const nextTimestamp: number = getCurrentTimestamp();
-    const newBlock: Block = findBlock(nextIndex, previousBlock.hash, nextTimestamp, blockData, difficulty);
-    if (addBlockToChain(newBlock)) {
-        broadcastLatest();
-        return newBlock;
-    } else {
-        return null;
-    }
-
-};
-
 // gets the unspent transaction outputs owned by the wallet
 const getMyUnspentTransactionOutputs = () => {
     return findUnspentTxOuts(getPublicFromWallet(), getUnspentTxOuts());
 };
 
-const generateNextBlock = () => {
-    const coinbaseTx: Transaction = getCoinbaseTransaction(getPublicFromWallet(), getLatestBlock().index + 1);
-    const blockData: Transaction[] = [coinbaseTx].concat(getTransactionPool());
-    return generateRawNextBlock(blockData);
-};
-
-const generatenextBlockWithTransaction = (receiverAddress: string, amount: number) => {
-    if (!isValidAddress(receiverAddress)) {
-        throw Error('invalid address');
-    }
-    if (typeof amount !== 'number') {
-        throw Error('invalid amount');
-    }
-    const coinbaseTx: Transaction = getCoinbaseTransaction(getPublicFromWallet(), getLatestBlock().index + 1);
-    const tx: Transaction = createTransaction(receiverAddress, amount, getPrivateFromWallet(), getUnspentTxOuts(), getTransactionPool());
-    const blockData: Transaction[] = [coinbaseTx, tx];
-    return generateRawNextBlock(blockData);
-};
-
 const findBlock = (index: number, previousHash: string, timestamp: number, data: Transaction[], difficulty: number): Block => {
     let nonce = 0;
+    let chainID = 0;
+    let rank = 0;
+    let nextRank = 0;
     while (true) {
         const hash: string = calculateHash(index, previousHash, timestamp, data, difficulty, nonce);
         if (hashMatchesDifficulty(hash, difficulty)) {
-            return new Block(index, hash, previousHash, timestamp, data, difficulty, nonce);
+            return new Block(index, hash, previousHash, timestamp, data, difficulty, nonce, chainID,rank, nextRank);
         }
         nonce++;
     }
@@ -298,7 +270,7 @@ const handleReceivedTransaction = (transaction: Transaction) => {
 
 export {
     Block, getBlockchain, getUnspentTxOuts, getLatestBlock, sendTransaction,
-    generateRawNextBlock, generateNextBlock, generatenextBlockWithTransaction,
     handleReceivedTransaction, getMyUnspentTransactionOutputs,
-    getAccountBalance, isValidBlockStructure, replaceChain, addBlockToChain
+    getAccountBalance, isValidBlockStructure, replaceChain, addBlockToChain,
+    getDifficulty, findBlock
 };

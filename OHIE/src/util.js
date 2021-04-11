@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.hexToBinary = void 0;
 const hexToBinary = (s) => {
     let ret = '';
     const lookupTable = {

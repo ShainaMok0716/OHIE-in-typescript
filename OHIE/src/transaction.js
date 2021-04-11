@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Transaction = exports.hasDuplicates = exports.getPublicKey = exports.getCoinbaseTransaction = exports.TxOut = exports.TxIn = exports.UnspentTxOut = exports.validateTransaction = exports.isValidAddress = exports.getTransactionId = exports.signTxIn = exports.processTransactions = void 0;
 const CryptoJS = require("crypto-js");
 const ecdsa = require("elliptic");
 const _ = require("lodash");
