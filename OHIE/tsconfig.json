@@ -7,7 +7,9 @@
   "include": [
     "src/main.ts",
     "src/block.ts",
+    "src/miner.ts",
     "src/p2p.ts",
+    "src/verify.ts",
     "src/util.ts",
     "src/transaction.ts",
     "src/wallet.ts",

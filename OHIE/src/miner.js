@@ -9,7 +9,7 @@ const transactionPool_1 = require("./transactionPool");
 const getCurrentTimestamp = () => Math.round(new Date().getTime() / 1000);
 const generateRawNextBlock = (blockData, chainID = 0) => {
     const previousBlock = blockchain_1.getLatestBlock(chainID);
-    const difficulty = blockchain_1.getDifficulty(chainID, blockchain_1.getBlockchain(chainID));
+    const difficulty = blockchain_1.getDifficulty(chainID, blockchain_1.getBlockchain());
     const nextIndex = previousBlock.index + 1;
     const nextTimestamp = getCurrentTimestamp();
     const newBlock = blockchain_1.findBlock(nextIndex, previousBlock.hash, nextTimestamp, blockData, difficulty);

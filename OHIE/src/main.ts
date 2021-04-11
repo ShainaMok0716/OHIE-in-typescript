@@ -3,7 +3,7 @@ import * as express from 'express';
 import * as _ from 'lodash';
 import {
     Block, getAccountBalance,
-    getBlockchain, getMyUnspentTransactionOutputs, getUnspentTxOuts, sendTransaction
+    getBlockchain, getMyUnspentTransactionOutputs, getUnspentTxOuts, sendTransaction, test, initBlockChains
 } from './blockchain';
 import {
     generateNextBlock, generatenextBlockWithTransaction, generateRawNextBlock
@@ -17,7 +17,6 @@ import { log } from 'util';
 const httpPort: number = parseInt(process.env.HTTP_PORT) || 3001;
 const p2pPort: number = parseInt(process.env.P2P_PORT) || 6001;
 
-const chainsNumber = 4;
 
 const initHttpServer = (myHttpPort: number) => {
     const app = express();
@@ -30,21 +29,21 @@ const initHttpServer = (myHttpPort: number) => {
     });
 
     app.get('/blocks', (req, res) => {
-        for (let i = 0; i < chainsNumber; i++) {
-            res.send(getBlockchain(i));
-        }
+        res.send(getBlockchain());
+    });
+
+    app.get('/test', (req, res) => {
+        test();
     });
 
     app.get('/block/:hash', (req, res) => {
-        for (let i = 0; i < chainsNumber; i++) {
 
-            const block = _.find(getBlockchain(i), { 'hash': req.params.hash });
+            const block = _.find(getBlockchain(), { 'hash': req.params.hash });
             res.send(block);
-        }
     });
 
     app.get('/transaction/:id', (req, res) => {
-        const tx = _(getBlockchain( parseInt(req.params.chainid)))
+        const tx = _(getBlockchain())
             .map((blocks) => blocks.data)
             .flatten()
             .find({'id': req.params.id});
@@ -147,6 +146,7 @@ const initHttpServer = (myHttpPort: number) => {
     });
 };
 
+initBlockChains();
 initHttpServer(httpPort);
 initP2PServer(p2pPort);
 initWallet();

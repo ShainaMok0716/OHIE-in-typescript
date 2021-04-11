@@ -12,7 +12,7 @@ const getCurrentTimestamp = (): number => Math.round(new Date().getTime() / 1000
 
 const generateRawNextBlock = (blockData: Transaction[], chainID = 0) => {
     const previousBlock: Block = getLatestBlock(chainID);
-    const difficulty: number = getDifficulty(chainID,getBlockchain(chainID));
+    const difficulty: number = getDifficulty(chainID,getBlockchain());
     const nextIndex: number = previousBlock.index + 1;
     const nextTimestamp: number = getCurrentTimestamp();
     const newBlock: Block = findBlock(nextIndex, previousBlock.hash, nextTimestamp, blockData, difficulty);
