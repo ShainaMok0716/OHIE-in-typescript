@@ -17,6 +17,8 @@ import { log } from 'util';
 const httpPort: number = parseInt(process.env.HTTP_PORT) || 3001;
 const p2pPort: number = parseInt(process.env.P2P_PORT) || 6001;
 
+const chainsNumber = 4;
+
 const initHttpServer = (myHttpPort: number) => {
     const app = express();
     app.use(bodyParser.json());
@@ -28,16 +30,21 @@ const initHttpServer = (myHttpPort: number) => {
     });
 
     app.get('/blocks', (req, res) => {
-        res.send(getBlockchain());
+        for (let i = 0; i < chainsNumber; i++) {
+            res.send(getBlockchain(i));
+        }
     });
 
     app.get('/block/:hash', (req, res) => {
-        const block = _.find(getBlockchain(), {'hash' : req.params.hash});
-        res.send(block);
+        for (let i = 0; i < chainsNumber; i++) {
+
+            const block = _.find(getBlockchain(i), { 'hash': req.params.hash });
+            res.send(block);
+        }
     });
 
     app.get('/transaction/:id', (req, res) => {
-        const tx = _(getBlockchain())
+        const tx = _(getBlockchain( parseInt(req.params.chainid)))
             .map((blocks) => blocks.data)
             .flatten()
             .find({'id': req.params.id});

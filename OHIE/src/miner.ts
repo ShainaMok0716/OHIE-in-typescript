@@ -10,13 +10,13 @@ import { addToTransactionPool, getTransactionPool, updateTransactionPool } from 
 
 const getCurrentTimestamp = (): number => Math.round(new Date().getTime() / 1000);
 
-const generateRawNextBlock = (blockData: Transaction[]) => {
-    const previousBlock: Block = getLatestBlock();
-    const difficulty: number = getDifficulty(getBlockchain());
+const generateRawNextBlock = (blockData: Transaction[], chainID = 0) => {
+    const previousBlock: Block = getLatestBlock(chainID);
+    const difficulty: number = getDifficulty(chainID,getBlockchain(chainID));
     const nextIndex: number = previousBlock.index + 1;
     const nextTimestamp: number = getCurrentTimestamp();
     const newBlock: Block = findBlock(nextIndex, previousBlock.hash, nextTimestamp, blockData, difficulty);
-    if (addBlockToChain(newBlock)) {
+    if (addBlockToChain(newBlock, chainID)) {
         broadcastLatest();
         return newBlock;
     } else {
@@ -24,10 +24,10 @@ const generateRawNextBlock = (blockData: Transaction[]) => {
     }
 };
 
-const generateNextBlock = () => {
-    const coinbaseTx: Transaction = getCoinbaseTransaction(getPublicFromWallet(), getLatestBlock().index + 1);
+const generateNextBlock = (chainID = 0) => {
+    const coinbaseTx: Transaction = getCoinbaseTransaction(getPublicFromWallet(), getLatestBlock(chainID).index + 1);
     const blockData: Transaction[] = [coinbaseTx].concat(getTransactionPool());
-    return generateRawNextBlock(blockData);
+    return generateRawNextBlock(blockData, chainID);
 };
 
 const generatenextBlockWithTransaction = (receiverAddress: string, amount: number) => {
@@ -37,10 +37,13 @@ const generatenextBlockWithTransaction = (receiverAddress: string, amount: numbe
     if (typeof amount !== 'number') {
         throw Error('invalid amount');
     }
-    const coinbaseTx: Transaction = getCoinbaseTransaction(getPublicFromWallet(), getLatestBlock().index + 1);
+
+    let chainID = 0;
+
+    const coinbaseTx: Transaction = getCoinbaseTransaction(getPublicFromWallet(), getLatestBlock(chainID).index + 1);
     const tx: Transaction = createTransaction(receiverAddress, amount, getPrivateFromWallet(), getUnspentTxOuts(), getTransactionPool());
     const blockData: Transaction[] = [coinbaseTx, tx];
-    return generateRawNextBlock(blockData);
+    return generateRawNextBlock(blockData, chainID);
 };
 
 export {

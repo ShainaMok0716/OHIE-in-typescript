@@ -36,6 +36,7 @@ class Block {
     }
 }
 
+//initial setting
 const genesisTransaction = {
     'txIns': [{'signature': '', 'txOutId': '', 'txOutIndex': 0}],
     'txOuts': [{
@@ -49,14 +50,13 @@ const genesisBlock: Block = new Block(
     0, '91a73664bc84c0baa1fc75ea6e4aa6d1d20c5df664c724e3159aefc2e1186627', '', 1465154705, [genesisTransaction], 0, 0,0,0,0
 );
 
-let blockchain: Block[] = [genesisBlock];
 // 4 chains
 let blockchains: Block[][] = [[genesisBlock], [genesisBlock], [genesisBlock], [genesisBlock]]
 
 // the unspent txOut of genesis block is set to unspentTxOuts on startup
-let unspentTxOuts: UnspentTxOut[] = processTransactions(blockchain[0].data, [], 0);
+let unspentTxOuts: UnspentTxOut[] = processTransactions(blockchains[0][0].data, [], 0);
 
-const getBlockchain = (): Block[] => blockchain;
+const getBlockchain = (chainID = 0): Block[] => blockchains[chainID];
 
 const getUnspentTxOuts = (): UnspentTxOut[] => _.cloneDeep(unspentTxOuts);
 
@@ -66,7 +66,7 @@ const setUnspentTxOuts = (newUnspentTxOut: UnspentTxOut[]) => {
     unspentTxOuts = newUnspentTxOut;
 };
 
-const getLatestBlock = (): Block => blockchain[blockchain.length - 1];
+const getLatestBlock = (chainID = 0): Block => blockchains[chainID][blockchains[chainID].length - 1];
 
 // in seconds
 const BLOCK_GENERATION_INTERVAL: number = 10;
@@ -74,17 +74,19 @@ const BLOCK_GENERATION_INTERVAL: number = 10;
 // in blocks
 const DIFFICULTY_ADJUSTMENT_INTERVAL: number = 10;
 
-const getDifficulty = (aBlockchain: Block[]): number => {
-    const latestBlock: Block = aBlockchain[blockchain.length - 1];
+const mined_blocks: number = 0;
+
+const getDifficulty = (chainID:number, aBlockchain: Block[]): number => {
+    const latestBlock: Block = aBlockchain[blockchains[chainID].length - 1];
     if (latestBlock.index % DIFFICULTY_ADJUSTMENT_INTERVAL === 0 && latestBlock.index !== 0) {
-        return getAdjustedDifficulty(latestBlock, aBlockchain);
+        return getAdjustedDifficulty(chainID, latestBlock, aBlockchain);
     } else {
         return latestBlock.difficulty;
     }
 };
 
-const getAdjustedDifficulty = (latestBlock: Block, aBlockchain: Block[]) => {
-    const prevAdjustmentBlock: Block = aBlockchain[blockchain.length - DIFFICULTY_ADJUSTMENT_INTERVAL];
+const getAdjustedDifficulty = (chainID:number, latestBlock: Block, aBlockchain: Block[]) => {
+    const prevAdjustmentBlock: Block = aBlockchain[blockchains[chainID].length - DIFFICULTY_ADJUSTMENT_INTERVAL];
     const timeExpected: number = BLOCK_GENERATION_INTERVAL * DIFFICULTY_ADJUSTMENT_INTERVAL;
     const timeTaken: number = latestBlock.timestamp - prevAdjustmentBlock.timestamp;
     if (timeTaken < timeExpected / 2) {
@@ -233,14 +235,14 @@ const isValidChain = (blockchainToValidate: Block[]): UnspentTxOut[] => {
     return aUnspentTxOuts;
 };
 
-const addBlockToChain = (newBlock: Block): boolean => {
-    if (isValidNewBlock(newBlock, getLatestBlock())) {
+const addBlockToChain = (newBlock: Block, chainID = 0): boolean => {
+    if (isValidNewBlock(newBlock, getLatestBlock(chainID))) {
         const retVal: UnspentTxOut[] = processTransactions(newBlock.data, getUnspentTxOuts(), newBlock.index);
         if (retVal === null) {
             console.log('block is not valid in terms of transactions');
             return false;
         } else {
-            blockchain.push(newBlock);
+            blockchains[chainID].push(newBlock);
             setUnspentTxOuts(retVal);
             updateTransactionPool(unspentTxOuts);
             return true;
@@ -249,13 +251,13 @@ const addBlockToChain = (newBlock: Block): boolean => {
     return false;
 };
 
-const replaceChain = (newBlocks: Block[]) => {
+const replaceChain = (newBlocks: Block[], chainID = 0) => {
     const aUnspentTxOuts = isValidChain(newBlocks);
     const validChain: boolean = aUnspentTxOuts !== null;
     if (validChain &&
-        getAccumulatedDifficulty(newBlocks) > getAccumulatedDifficulty(getBlockchain())) {
+        getAccumulatedDifficulty(newBlocks) > getAccumulatedDifficulty(getBlockchain(chainID))) {
         console.log('Received blockchain is valid. Replacing current blockchain with received blockchain');
-        blockchain = newBlocks;
+        blockchains[chainID] = newBlocks;
         setUnspentTxOuts(aUnspentTxOuts);
         updateTransactionPool(unspentTxOuts);
         broadcastLatest();

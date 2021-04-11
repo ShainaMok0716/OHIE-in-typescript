@@ -10,6 +10,7 @@ const transactionPool_1 = require("./transactionPool");
 const wallet_1 = require("./wallet");
 const httpPort = parseInt(process.env.HTTP_PORT) || 3001;
 const p2pPort = parseInt(process.env.P2P_PORT) || 6001;
+const chainsNumber = 4;
 const initHttpServer = (myHttpPort) => {
     const app = express();
     app.use(bodyParser.json());
@@ -19,14 +20,18 @@ const initHttpServer = (myHttpPort) => {
         }
     });
     app.get('/blocks', (req, res) => {
-        res.send(blockchain_1.getBlockchain());
+        for (let i = 0; i < chainsNumber; i++) {
+            res.send(blockchain_1.getBlockchain(i));
+        }
     });
     app.get('/block/:hash', (req, res) => {
-        const block = _.find(blockchain_1.getBlockchain(), { 'hash': req.params.hash });
-        res.send(block);
+        for (let i = 0; i < chainsNumber; i++) {
+            const block = _.find(blockchain_1.getBlockchain(i), { 'hash': req.params.hash });
+            res.send(block);
+        }
     });
     app.get('/transaction/:id', (req, res) => {
-        const tx = _(blockchain_1.getBlockchain())
+        const tx = _(blockchain_1.getBlockchain(parseInt(req.params.chainid)))
             .map((blocks) => blocks.data)
             .flatten()
             .find({ 'id': req.params.id });
