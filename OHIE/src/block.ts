@@ -4,7 +4,7 @@ import {
 } from './transaction';
 import * as Int64 from 'node-int64';
 
-class networkBlock{
+class NetworkBlock{
 
 	public chain_id:number;
 	public parent:number;
@@ -31,7 +31,7 @@ class networkBlock{
 class Block{
 
 	public hash: Int64;
-	public nb: networkBlock;
+	public nb: NetworkBlock;
 	public is_full_block: boolean;
 	public left: Block;
 	public right: Block;
@@ -65,9 +65,9 @@ class Block{
 
 } 
 
-class incompleteBlock{
+class IncompleteBlock{
 	public b: Block;
-	public next: incompleteBlock;
+	public next: IncompleteBlock;
 	public last_asked: number;
 	public no_asks: number;
 
@@ -76,5 +76,5 @@ class incompleteBlock{
 } 
 
 export {
-	networkBlock, Block, incompleteBlock
+	NetworkBlock, Block, IncompleteBlock
 }
