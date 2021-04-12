@@ -228,20 +228,20 @@ function insert_subtree_by_hash(r: Block, subtree: Block) {
     return r;
 }
 
-function add_block_by_parent_hash(root: Block, parent: Int64, hash: Int64): boolean //needadd
+function add_block_by_parent_hash(root: Block, parent: Int64, hash: Int64): { root: Block, added: boolean } //need
 {
     // Find the parent block node by parent's Int64
     let p: Block = find_block_by_hash( root, parent);
     if (null == p) {
         console.log("Cannot find parent for ");
-        return false;
+        return { root, added:false};
     }
     // Insert the new node (of the child)
     const { r, newnode } = insert_block_only_by_hash(root, hash, null);
 
     if (null == newnode) {
         console.log( "Something is wrong, new node is null in 'add_child' ")
-        return false;
+        return { root, added: false };
     }
 
     // Set the parent of the new node
@@ -257,7 +257,7 @@ function add_block_by_parent_hash(root: Block, parent: Int64, hash: Int64): bool
         z.sibling = newnode;
     }
 
-    return true;
+    return { root, added: true };
 }
 
 function find_number_of_nodes(r: Block):number
@@ -346,7 +346,7 @@ function add_block_to_incomplete(l: IncompleteBlock, parent_hash: Int64, child_h
 
         let bl:Block = null;
         bl = bootstrap_chain(parent_hash);
-        add_block_by_parent_hash( bl, parent_hash, child_hash);
+        bl = add_block_by_parent_hash(bl, parent_hash, child_hash).root;
 
         let bi: IncompleteBlock = new IncompleteBlock();
         bi.b = bl;
@@ -371,7 +371,7 @@ function add_block_to_incomplete(l: IncompleteBlock, parent_hash: Int64, child_h
     if (null == ch && null == ph) {
         let bl:Block = null;
         bl = bootstrap_chain(parent_hash);
-        add_block_by_parent_hash( bl, parent_hash, child_hash);
+        bl = add_block_by_parent_hash(bl, parent_hash, child_hash).root;
 
         let bi: IncompleteBlock = new IncompleteBlock();
         bi.b = bl;
@@ -382,7 +382,7 @@ function add_block_to_incomplete(l: IncompleteBlock, parent_hash: Int64, child_h
     }
     else if (null == ch) {
 
-        add_block_by_parent_hash( ph .b, parent_hash, child_hash);
+        ph.b = add_block_by_parent_hash(ph.b, parent_hash, child_hash).root;
     }
     else if (null == ph) {
 
@@ -482,14 +482,14 @@ function print_hash_tree(root: Block) {
  * Add the block to the main/incomplete chain
  * Return true if the parent hash is not in any of the main/incomplete chains
  */
-const add_received_block = (chain_id: number, parent: Int64, hash: Int64, nb: NetworkBlock): boolean => //need
+const add_received_block = (chain_id: number, parent: Int64, hash: Int64, nb: NetworkBlock): { added: boolean, isIncomplete: boolean } => 
 {
 
     let added = false;
-
+    let isIncomplete = false
 
     // If block is already in the chain, then do nothing
-    if (find_block_by_hash(blockchains[chain_id], hash) != null) return false;
+    if (find_block_by_hash(blockchains[chain_id], hash) != null) return { added, isIncomplete };
 
     added = true;
 
@@ -528,7 +528,7 @@ const add_received_block = (chain_id: number, parent: Int64, hash: Int64, nb: Ne
         }
         else {
             // Just add the (parent, hash)
-            add_block_by_parent_hash( blockchains[chain_id], parent, hash);
+            blockchains[chain_id] = add_block_by_parent_hash(blockchains[chain_id], parent, hash).root;
 
             // Add to the non-full-blocks
             if (received_non_full_blocks[hash] == received_non_full_blocks.values()[received_non_full_blocks.size-1] && !have_full_block(chain_id, hash)) {
@@ -561,7 +561,7 @@ const add_received_block = (chain_id: number, parent: Int64, hash: Int64, nb: Ne
 
         if (is_in_incomplete(inBlockchains[chain_id], parent, hash)) {
             added = false;
-            return false;
+            return { added, isIncomplete };
         }
 
         // Add this to incomplete chain
@@ -576,11 +576,12 @@ const add_received_block = (chain_id: number, parent: Int64, hash: Int64, nb: Ne
 
 
         // Ask for parent hash
-        return true;
+        isIncomplete = true
+        return { added, isIncomplete };
 
     }
-
-    return false;
+    isIncomplete = false
+    return { added, isIncomplete };
 
 }
 
