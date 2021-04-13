@@ -296,4 +296,12 @@ const isValidAddress = (address) => {
     return true;
 };
 exports.isValidAddress = isValidAddress;
+
+export function create_transaction_block(hash, filename){
+    let l = 0;
+    let no_txs = 0;
+
+    // TODO 
+    return no_txs;
+}
 //# sourceMappingURL=transaction.js.map

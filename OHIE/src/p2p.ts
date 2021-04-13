@@ -2,10 +2,11 @@ import * as WebSocket from 'ws';
 import {Server} from 'ws';
 import {
     addBlockToChain, Block, getBlockchain, getLatestBlock, handleReceivedTransaction, isValidBlockStructure,
-    replaceChain
+    replaceChain, NetworkBlock
 } from './blockchain';
 import {Transaction} from './transaction';
 import {getTransactionPool} from './transactionPool';
+import {handle_process_block, handle_ask_block} from './p2p_processor'
 
 const sockets: WebSocket[] = [];
 
@@ -14,7 +15,8 @@ enum MessageType {
     QUERY_ALL = 1,
     RESPONSE_BLOCKCHAIN = 2,
     QUERY_TRANSACTION_POOL = 3,
-    RESPONSE_TRANSACTION_POOL = 4
+    RESPONSE_TRANSACTION_POOL = 4,
+    ASK_BLOCK = 5,
 }
 
 class Message {
@@ -98,6 +100,9 @@ const initMessageHandler = (ws: WebSocket) => {
                         }
                     });
                     break;
+                case MessageType.ASK_BLOCK:
+                    handle_ask_block(message.data);
+                    break;
             }
         } catch (e) {
             console.log(e);
@@ -106,11 +111,13 @@ const initMessageHandler = (ws: WebSocket) => {
 };
 
 const write = (ws: WebSocket, message: Message): void => ws.send(JSON.stringify(message));
-const broadcast = (message: Message): void => sockets.forEach((socket) => write(socket, message));
+export const broadcast = (message: Message): void => sockets.forEach((socket) => write(socket, message));
 
 const queryChainLengthMsg = (): Message => ({'type': MessageType.QUERY_LATEST, 'data': null});
 
 const queryAllMsg = (): Message => ({'type': MessageType.QUERY_ALL, 'data': null});
+
+const queryBlock = (nb: NetworkBlock): Message => ({'type': MessageType.ASK_BLOCK, 'data': JSON.stringify(nb)});
 
 const responseChainMsg = (): Message => ({
     'type': MessageType.RESPONSE_BLOCKCHAIN, 'data': JSON.stringify(getBlockchain())
@@ -130,6 +137,11 @@ const responseTransactionPoolMsg = (): Message => ({
     'type': MessageType.RESPONSE_TRANSACTION_POOL,
     'data': JSON.stringify(getTransactionPool())
 });
+
+
+// REQUESTS IS MOVED HERE
+export const create__process_block = (nb: NetworkBlock): Message => ({'type': MessageType.ASK_BLOCK, 'data': JSON.stringify(nb)});
+
 
 const initErrorHandler = (ws: WebSocket) => {
     const closeConnection = (myWs: WebSocket) => {
@@ -189,3 +201,25 @@ const broadCastTransactionPool = () => {
 };
 
 export {connectToPeers, broadcastLatest, broadCastTransactionPool, initP2PServer, getSockets};
+
+
+export function create_transaction_block(){
+
+}
+
+export function send_block_to_peers(nb){
+    let msg = 
+}
+
+export function ask_block_from_peers(nb){
+    broadcast(queryBlock(nb));
+}
+
+
+function write_to_all_peers(msg){
+    broadcast(msg);
+}
+
+function write_to_one_peer(ws, msg){
+    write(ws, msg);
+}
