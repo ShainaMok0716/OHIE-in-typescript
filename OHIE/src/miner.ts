@@ -1,4 +1,6 @@
-﻿import {
+﻿import * as CryptoJS from 'crypto-js';
+import * as Int64 from 'node-int64';
+import {
     getCoinbaseTransaction, isValidAddress, processTransactions, Transaction, UnspentTxOut
 } from './transaction';
 import {
@@ -9,7 +11,6 @@ import { createTransaction, findUnspentTxOuts, getBalance, getPrivateFromWallet,
 import { broadcastLatest, broadCastTransactionPool } from './p2p';
 import { addToTransactionPool, getTransactionPool, updateTransactionPool } from './transactionPool';
 import { blockhash_to_string, compute_merkle_tree_root,compute_merkle_proof,get_chain_id_from_hash } from './verify';
-import { sha256 } from './cypto_stuff';
 import config from './Configuration';
 
 const getCurrentTimestamp = (): number => Math.round(new Date().getTime() / 1000);
@@ -56,10 +57,10 @@ export {
 
 
 //-----------------------------------------------
-
+// Below are the functions that move from miner.cpp
 let total_mined = 0;
 
-function mine_new_block(bc: Block[]) : number
+function mine_new_block(bc: Block[]) : Int64
 {
   	//std::unique_lock<std::mutex> l(bc->lock);
 	//bc->can_write.wait( l, [bc](){return !bc->locker_write;});
@@ -91,24 +92,24 @@ function mine_new_block(bc: Block[]) : number
 	}
 
 	// Make a complete binary tree
-	let tot_size_add : number = Math.pow(2,Math.ceil( Math.log(leaves.length) / Math.log(2) )) - leaves.length;
+	let tot_size_add : Int64 = Math.pow(2,Math.ceil( Math.log(leaves.length) / Math.log(2) )) - leaves.length;
 	for( let i=0; i<tot_size_add ; i++)
 		leaves.push(config.EMPTY_LEAF);
 
 	// hash to produce the hash of the new block
 	let merkle_root_chains: string = compute_merkle_tree_root( leaves );
 	let merkle_root_txs: string = toString(rng());
-	let h: string= sha256( merkle_root_chains + merkle_root_txs );
+	let h: string= CryptoJS.SHA256( merkle_root_chains + merkle_root_txs ).toString();
 
 	// Determine the chain where it should go
-	let chain_id : number = get_chain_id_from_hash(h);
+	let chain_id : Int64 = get_chain_id_from_hash(h);
 
 	// Determine the new block
-	let new_block: number = string_to_blockhash( h );
+	let new_block: Int64 = string_to_blockhash( h );
 
 	// Create file holding the whole block
 	// Supposedly composed of transactions
-	let no_txs : number = create_transaction_block( new_block , get_server_folder()+"/"+blockhash_to_string( new_block ) ); 
+	let no_txs : Int64 = create_transaction_block( new_block , get_server_folder()+"/"+blockhash_to_string( new_block ) ); 
 	if( 0 == no_txs  ) {
 		console.log("Cannot create the file with transaction");
 		return;
@@ -174,7 +175,7 @@ function mine_new_block(bc: Block[]) : number
 }
 
 /*
-function get_mine_time_in_milliseconds() : number 
+function get_mine_time_in_milliseconds() : Int64 
 {
 	std::exponential_distribution<double> exp_dist (1.0/EXPECTED_MINE_TIME_IN_MILLISECONDS);
 	uint32_t msec = exp_dist(rng);

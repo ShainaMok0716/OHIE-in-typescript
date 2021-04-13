@@ -1,4 +1,4 @@
-﻿import { sha256 } from './cypto_stuff';
+﻿import * as CryptoJS from 'crypto-js';
 import config from './Configuration';
 
 function blockhash_to_string ( b: BlockHash): string
@@ -21,7 +21,7 @@ function compute_merkle_tree_root ( leaves: string[] ): string
 		for( let i=0; i< tmp2.length/2; i++){
 			let st: string = tmp2[2*i+0] + tmp2[2*i+1];
 			next += 2;
-			tmp.push( sha256( st ) );
+			tmp.push( CryptoJS.SHA256(st).toString());
 		}
 	}
 	return tmp[0];
@@ -41,7 +41,7 @@ function compute_merkle_proof( leaves: string[], index: number ): string[]
 		for( let i=0; i< tmp2.length/2; i++){
 
 			let st: string = tmp2[2*i+0] + tmp2[2*i+1];
-			tmp.push( sha256(st) );
+			tmp.push( CryptoJS.SHA256(st).toString());
 
 			if ( 2*i+0 == adj_index || 2*i+1 == adj_index  )
 				proof.push( (2*i+0 == adj_index) ? tmp2[2*i+0] : tmp2[2*i+1] );

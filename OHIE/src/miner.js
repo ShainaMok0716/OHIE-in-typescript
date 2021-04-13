@@ -1,13 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generatenextBlockWithTransaction = exports.generateNextBlock = exports.generateRawNextBlock = void 0;
+const CryptoJS = require("crypto-js");
 const transaction_1 = require("./transaction");
 const blockchain_1 = require("./blockchain");
 const wallet_1 = require("./wallet");
 const p2p_1 = require("./p2p");
 const transactionPool_1 = require("./transactionPool");
 const verify_1 = require("./verify");
-const cypto_stuff_1 = require("./cypto_stuff");
 const Configuration_1 = require("./Configuration");
 const getCurrentTimestamp = () => Math.round(new Date().getTime() / 1000);
 const generateRawNextBlock = (blockData, chainID = 0) => {
@@ -46,6 +46,7 @@ const generatenextBlockWithTransaction = (receiverAddress, amount) => {
 };
 exports.generatenextBlockWithTransaction = generatenextBlockWithTransaction;
 //-----------------------------------------------
+// Below are the functions that move from miner.cpp
 let total_mined = 0;
 function mine_new_block(bc) {
     //std::unique_lock<std::mutex> l(bc->lock);
@@ -79,7 +80,7 @@ function mine_new_block(bc) {
     // hash to produce the hash of the new block
     let merkle_root_chains = verify_1.compute_merkle_tree_root(leaves);
     let merkle_root_txs = toString(rng());
-    let h = cypto_stuff_1.sha256(merkle_root_chains + merkle_root_txs);
+    let h = CryptoJS.SHA256(merkle_root_chains + merkle_root_txs).toString();
     // Determine the chain where it should go
     let chain_id = verify_1.get_chain_id_from_hash(h);
     // Determine the new block
@@ -141,7 +142,7 @@ function mine_new_block(bc) {
     return chain_id;
 }
 /*
-function get_mine_time_in_milliseconds() : number
+function get_mine_time_in_milliseconds() : Int64
 {
     std::exponential_distribution<double> exp_dist (1.0/EXPECTED_MINE_TIME_IN_MILLISECONDS);
     uint32_t msec = exp_dist(rng);

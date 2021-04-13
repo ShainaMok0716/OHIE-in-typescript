@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.get_chain_id_from_hash = exports.compute_merkle_proof = exports.compute_merkle_tree_root = exports.blockhash_to_string = void 0;
-const cypto_stuff_1 = require("./cypto_stuff");
+const CryptoJS = require("crypto-js");
 const Configuration_1 = require("./Configuration");
 function blockhash_to_string(b) {
     let hash = b.toString(16);
@@ -19,7 +19,7 @@ function compute_merkle_tree_root(leaves) {
         for (let i = 0; i < tmp2.length / 2; i++) {
             let st = tmp2[2 * i + 0] + tmp2[2 * i + 1];
             next += 2;
-            tmp.push(cypto_stuff_1.sha256(st));
+            tmp.push(CryptoJS.SHA256(st).toString());
         }
     }
     return tmp[0];
@@ -36,7 +36,7 @@ function compute_merkle_proof(leaves, index) {
         let adj_index = (index % 2) ? (index - 1) : (index + 1);
         for (let i = 0; i < tmp2.length / 2; i++) {
             let st = tmp2[2 * i + 0] + tmp2[2 * i + 1];
-            tmp.push(cypto_stuff_1.sha256(st));
+            tmp.push(CryptoJS.SHA256(st).toString());
             if (2 * i + 0 == adj_index || 2 * i + 1 == adj_index)
                 proof.push((2 * i + 0 == adj_index) ? tmp2[2 * i + 0] : tmp2[2 * i + 1]);
         }
