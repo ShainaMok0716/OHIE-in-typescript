@@ -6,6 +6,9 @@ const blockchain_1 = require("./blockchain");
 const wallet_1 = require("./wallet");
 const p2p_1 = require("./p2p");
 const transactionPool_1 = require("./transactionPool");
+const verify_1 = require("./verify");
+const cypto_stuff_1 = require("./cypto_stuff");
+const Configuration_1 = require("./Configuration");
 const getCurrentTimestamp = () => Math.round(new Date().getTime() / 1000);
 const generateRawNextBlock = (blockData, chainID = 0) => {
     const previousBlock = blockchain_1.getLatestBlock(chainID);
@@ -51,10 +54,10 @@ function mine_new_block(bc) {
     // Concatenate the candidates of all chains 
     let leaves = []; // used in Merkle tree hash computation
     // Last block of the trailing chain 
-    let trailing_block = get_deepest_child_by_chain_id(0);
+    let trailing_block = blockchain_1.get_deepest_child_by_chain_id(0);
     let trailing_id = 0;
-    for (let i = 0; i < MAX_CHAINS; i++) {
-        let b = get_deepest_child_by_chain_id(i);
+    for (let i = 0; i < Configuration_1.default.MAX_CHAINS; i++) {
+        let b = blockchain_1.get_deepest_child_by_chain_id(i);
         if (null == b) {
             console.log("Something is wrong in mine_new_block: get_deepest return NULL");
             return;
@@ -67,31 +70,31 @@ function mine_new_block(bc) {
             trailing_block = b;
             trailing_id = i;
         }
-        leaves.push(blockhash_to_string(b.hash));
+        leaves.push(verify_1.blockhash_to_string(b.hash));
     }
     // Make a complete binary tree
     let tot_size_add = Math.pow(2, Math.ceil(Math.log(leaves.length) / Math.log(2))) - leaves.length;
     for (let i = 0; i < tot_size_add; i++)
-        leaves.push(EMPTY_LEAF);
+        leaves.push(Configuration_1.default.EMPTY_LEAF);
     // hash to produce the hash of the new block
-    let merkle_root_chains = compute_merkle_tree_root(leaves);
+    let merkle_root_chains = verify_1.compute_merkle_tree_root(leaves);
     let merkle_root_txs = toString(rng());
-    let h = sha256(merkle_root_chains + merkle_root_txs);
+    let h = cypto_stuff_1.sha256(merkle_root_chains + merkle_root_txs);
     // Determine the chain where it should go
-    let chain_id = get_chain_id_from_hash(h);
+    let chain_id = verify_1.get_chain_id_from_hash(h);
     // Determine the new block
     let new_block = string_to_blockhash(h);
     // Create file holding the whole block
     // Supposedly composed of transactions
-    let no_txs = create_transaction_block(new_block, get_server_folder() + "/" + blockhash_to_string(new_block));
+    let no_txs = create_transaction_block(new_block, get_server_folder() + "/" + verify_1.blockhash_to_string(new_block));
     if (0 == no_txs) {
         console.log("Cannot create the file with transaction");
         return;
     }
     // Find Merkle path for the winning chain
-    let proof_new_chain = compute_merkle_proof(leaves, chain_id);
+    let proof_new_chain = verify_1.compute_merkle_proof(leaves, chain_id);
     // Last block of the chain where new block will be mined
-    let parent = get_deepest_child_by_chain_id(chain_id);
+    let parent = blockchain_1.get_deepest_child_by_chain_id(chain_id);
     let nb;
     nb.chain_id = chain_id;
     nb.parent = parent.hash;
@@ -113,13 +116,13 @@ function mine_new_block(bc) {
     //let time_of_now: number = std::chrono::system_clock::now().time_since_epoch() / std::chrono::milliseconds(1);
     nb.time_mined = time_of_now;
     nb.time_received = time_of_now;
-    for (let j = 0; j < NO_T_DISCARDS; j++) {
+    for (let j = 0; j < Configuration_1.default.NO_T_DISCARDS; j++) {
         nb.time_commited[j] = 0;
         nb.time_partial[j] = 0;
     }
     // Add the block to the chain
     add_block_by_parent_hash_and_chain_id(parent.hash, new_block, chain_id, nb);
-    if (PRINT_MINING_MESSAGES) {
+    if (Configuration_1.default.PRINT_MINING_MESSAGES) {
         //printf("\033[33;1m[+] Mined block on chain[%d] : [%lx %lx]\n\033[0m", chain_id, parent->hash, new_block);
         console.log("\033[33;1m[+] Mined block on chain[%d] : [%lx %lx]\n\033[0m", chain_id, parent.hash, new_block);
     }
@@ -172,7 +175,7 @@ function miner(bc) {
     }
     */
     miner(bc);
-    if (total_mined >= MAX_MINE_BLOCKS)
+    if (total_mined >= Configuration_1.default.MAX_MINE_BLOCKS)
         return;
     total_mined++;
     // Incorporate new block into the blockchain and pass it to peers

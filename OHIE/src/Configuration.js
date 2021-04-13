@@ -12,5 +12,10 @@ exports.default = {
     MAX_ASK_NON_FULL_IN_ONE_GO: 250,
     NO_ASKS_BEFORE_REMOVING: 600,
     T_DISCARD: [],
+    PRINT_MINING_MESSAGES: 0,
+    // Cease all mining after mining MAX_MINE_BLOCKS blocks
+    MAX_MINE_BLOCKS: 300000,
+    BLOCK_SIZE_IN_BYTES: (4 * 8 * 1024),
+    EMPTY_LEAF: "00000000000000000000000000000000",
 };
 //# sourceMappingURL=Configuration.js.map

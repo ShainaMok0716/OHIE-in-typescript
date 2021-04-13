@@ -1088,7 +1088,7 @@ const test = () => {
 }
 
 export {
-    Block, getBlockchain, getUnspentTxOuts, getLatestBlock, sendTransaction,
+    NetworkBlock, Block, getBlockchain, getUnspentTxOuts, getLatestBlock, sendTransaction,
     handleReceivedTransaction, getMyUnspentTransactionOutputs,
     getAccountBalance, isValidBlockStructure, replaceChain, addBlockToChain,
     getDifficulty, findBlock, test, initBlockChains,

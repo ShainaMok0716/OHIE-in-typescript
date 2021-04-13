@@ -2,11 +2,14 @@
     getCoinbaseTransaction, isValidAddress, processTransactions, Transaction, UnspentTxOut
 } from './transaction';
 import {
-    Block, getBlockchain, getUnspentTxOuts, getLatestBlock, getDifficulty, findBlock, addBlockToChain
+    NetworkBlock, Block, getBlockchain, getUnspentTxOuts, getLatestBlock, getDifficulty, findBlock, addBlockToChain,
+	get_deepest_child_by_chain_id
 } from './blockchain';
 import { createTransaction, findUnspentTxOuts, getBalance, getPrivateFromWallet, getPublicFromWallet } from './wallet';
 import { broadcastLatest, broadCastTransactionPool } from './p2p';
 import { addToTransactionPool, getTransactionPool, updateTransactionPool } from './transactionPool';
+import { blockhash_to_string, compute_merkle_tree_root,compute_merkle_proof,get_chain_id_from_hash } from './verify';
+import { sha256 } from './cypto_stuff';
 import config from './Configuration';
 
 const getCurrentTimestamp = (): number => Math.round(new Date().getTime() / 1000);
@@ -90,7 +93,7 @@ function mine_new_block(bc: Block[]) : number
 	// Make a complete binary tree
 	let tot_size_add : number = Math.pow(2,Math.ceil( Math.log(leaves.length) / Math.log(2) )) - leaves.length;
 	for( let i=0; i<tot_size_add ; i++)
-		leaves.push(EMPTY_LEAF);
+		leaves.push(config.EMPTY_LEAF);
 
 	// hash to produce the hash of the new block
 	let merkle_root_chains: string = compute_merkle_tree_root( leaves );
@@ -101,7 +104,7 @@ function mine_new_block(bc: Block[]) : number
 	let chain_id : number = get_chain_id_from_hash(h);
 
 	// Determine the new block
-	let new_block: BlockHash = string_to_blockhash( h );
+	let new_block: number = string_to_blockhash( h );
 
 	// Create file holding the whole block
 	// Supposedly composed of transactions
@@ -117,7 +120,7 @@ function mine_new_block(bc: Block[]) : number
 	// Last block of the chain where new block will be mined
 	let parent: Block = get_deepest_child_by_chain_id( chain_id );
 
-	let nb: networkBlock;
+	let nb: NetworkBlock;
 	nb.chain_id = chain_id;
 	nb.parent = parent.hash;
 	nb.hash = new_block;
@@ -139,14 +142,14 @@ function mine_new_block(bc: Block[]) : number
 	//let time_of_now: number = std::chrono::system_clock::now().time_since_epoch() / std::chrono::milliseconds(1);
 	nb.time_mined = time_of_now;
 	nb.time_received = time_of_now;
-	for( let j=0; j<NO_T_DISCARDS; j++){
+	for( let j=0; j<config.NO_T_DISCARDS; j++){
 		nb.time_commited[j] = 0;
 		nb.time_partial[j] = 0;
 	}
 
 	// Add the block to the chain
 	add_block_by_parent_hash_and_chain_id( parent.hash, new_block, chain_id, nb );
-	if( PRINT_MINING_MESSAGES) {
+	if( config.PRINT_MINING_MESSAGES) {
 		//printf("\033[33;1m[+] Mined block on chain[%d] : [%lx %lx]\n\033[0m", chain_id, parent->hash, new_block);
 		console.log("\033[33;1m[+] Mined block on chain[%d] : [%lx %lx]\n\033[0m", chain_id, parent.hash, new_block);
 	}
