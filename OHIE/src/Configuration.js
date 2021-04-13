@@ -1,0 +1,16 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = {
+    CHAINS: 4,
+    MAX_CHAINS: 4,
+    NO_T_DISCARDS: 1,
+    ASK_FOR_INCOMPLETE_EACH_MILLISECONDS: 50,
+    ASK_FOR_INCOMPLETE_INDIVIDUAL_MILLISECONDS: 60,
+    ASK_FOR_FULL_BLOCKS_EACH_MILLISECONDS: 200,
+    ASK_FOR_FULL_BLOCKS_INDIVIDUAL_EACH_MILLISECONDS: 550,
+    MAX_WAIT_FOR_FULL_BLOCK_MILLSECONDS: 1000,
+    MAX_ASK_NON_FULL_IN_ONE_GO: 250,
+    NO_ASKS_BEFORE_REMOVING: 600,
+    T_DISCARD: [],
+};
+//# sourceMappingURL=Configuration.js.map

@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.incompleteBlock = exports.Block = exports.networkBlock = void 0;
-class networkBlock {
+exports.IncompleteBlock = exports.Block = exports.NetworkBlock = void 0;
+class NetworkBlock {
     constructor() {
     }
 }
-exports.networkBlock = networkBlock;
+exports.NetworkBlock = NetworkBlock;
 class Block {
     constructor(index, hash, previousHash, timestamp, data, difficulty, nonce, chainID, rank, nextRank) {
         this.index = index;
@@ -21,9 +21,9 @@ class Block {
     }
 }
 exports.Block = Block;
-class incompleteBlock {
+class IncompleteBlock {
     constructor() {
     }
 }
-exports.incompleteBlock = incompleteBlock;
+exports.IncompleteBlock = IncompleteBlock;
 //# sourceMappingURL=block.js.map
