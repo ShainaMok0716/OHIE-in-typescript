@@ -1,14 +1,23 @@
 ﻿import * as CryptoJS from 'crypto-js';
 import config from './Configuration';
+import {
+    BlockHash
+} from './blockchain';
 
 function blockhash_to_string ( b: BlockHash): string
 {
 	let hash: string = b.toString(16);
 	
-	if ( hash.length < 2 * sizeOf(BlockHash) )
-		hash = string(2 * sizeOf(BlockHash) - hash.length, '0').append( hash );
+	//if ( hash.length < 2 * sizeOf(BlockHash) )
+	//	hash = string(2 * sizeOf(BlockHash) - hash.length, '0').append( hash );
+	let newhash:string = padLeft(hash, '0', 2 * 8);
 	
-	return hash;
+	return newhash;
+}
+
+function padLeft(text:string, padChar:string, size:number): string 
+{
+    return (String(padChar).repeat(size) + text).substr( (size * -1), size);
 }
 
 function compute_merkle_tree_root ( leaves: string[] ): string

@@ -8,7 +8,7 @@ import {
 	get_deepest_child_by_chain_id
 } from './blockchain';
 import { createTransaction, findUnspentTxOuts, getBalance, getPrivateFromWallet, getPublicFromWallet } from './wallet';
-import { broadcastLatest, broadCastTransactionPool } from './p2p';
+import { broadcastLatest, broadCastTransactionPool,send_block_to_peers } from './p2p';
 import { addToTransactionPool, getTransactionPool, updateTransactionPool } from './transactionPool';
 import { blockhash_to_string, compute_merkle_tree_root,compute_merkle_proof,get_chain_id_from_hash } from './verify';
 import config from './Configuration';

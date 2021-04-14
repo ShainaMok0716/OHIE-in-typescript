@@ -12,6 +12,8 @@ import { NetworkBlock, Block, IncompleteBlock } from './block';
 import config from './Configuration';
 
 
+type BlockHash = Int64;
+
 // 4 chains
 let blockchains: Block[];
 let inBlockchains: IncompleteBlock[];
@@ -1088,7 +1090,7 @@ const test = () => {
 }
 
 export {
-    NetworkBlock, Block, getBlockchain, getUnspentTxOuts, getLatestBlock, sendTransaction,
+    BlockHash, NetworkBlock, Block, getBlockchain, getUnspentTxOuts, getLatestBlock, sendTransaction,
     handleReceivedTransaction, getMyUnspentTransactionOutputs,
     getAccountBalance, isValidBlockStructure, replaceChain, addBlockToChain,
     getDifficulty, findBlock, test, initBlockChains,

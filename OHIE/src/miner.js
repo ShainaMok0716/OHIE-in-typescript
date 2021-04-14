@@ -135,7 +135,7 @@ function mine_new_block(bc) {
     // Increase the miner counter
     add_mined_block();
     // Send the block to peers
-    send_block_to_peers(nb);
+    p2p_1.send_block_to_peers(nb);
     //bc->locker_write = false;
     //l.unlock();
     //bc->can_write.notify_one();

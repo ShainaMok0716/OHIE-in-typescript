@@ -35,5 +35,5 @@ export function handle_ask_block(nb: NetworkBlock){
     if(b == undefined)
         b = find_incomplete_block_by_hash_and_chain_id(nb.hash, nb.chain_id);
 
-    for(let i = 0; i < )
+    //for(let i = 0; i < )
 }

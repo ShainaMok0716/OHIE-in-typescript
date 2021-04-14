@@ -5,11 +5,15 @@ const CryptoJS = require("crypto-js");
 const Configuration_1 = require("./Configuration");
 function blockhash_to_string(b) {
     let hash = b.toString(16);
-    if (hash.length < 2 * sizeOf(BlockHash))
-        hash = string(2 * sizeOf(BlockHash) - hash.length, '0').append(hash);
-    return hash;
+    //if ( hash.length < 2 * sizeOf(BlockHash) )
+    //	hash = string(2 * sizeOf(BlockHash) - hash.length, '0').append( hash );
+    let newhash = padLeft(hash, '0', 2 * 8);
+    return newhash;
 }
 exports.blockhash_to_string = blockhash_to_string;
+function padLeft(text, padChar, size) {
+    return (String(padChar).repeat(size) + text).substr((size * -1), size);
+}
 function compute_merkle_tree_root(leaves) {
     let tmp = leaves;
     let next = 0;

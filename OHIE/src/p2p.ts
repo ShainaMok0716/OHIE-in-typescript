@@ -208,7 +208,7 @@ export function create_transaction_block(){
 }
 
 export function send_block_to_peers(nb){
-    let msg = 
+    //let msg = 
 }
 
 export function ask_block_from_peers(nb){

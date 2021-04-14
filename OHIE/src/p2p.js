@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSockets = exports.initP2PServer = exports.broadCastTransactionPool = exports.broadcastLatest = exports.connectToPeers = void 0;
+exports.ask_block_from_peers = exports.send_block_to_peers = exports.create_transaction_block = exports.getSockets = exports.initP2PServer = exports.broadCastTransactionPool = exports.broadcastLatest = exports.connectToPeers = exports.create__process_block = exports.broadcast = void 0;
 const WebSocket = require("ws");
 const blockchain_1 = require("./blockchain");
 const transactionPool_1 = require("./transactionPool");
+const p2p_processor_1 = require("./p2p_processor");
 const sockets = [];
 var MessageType;
 (function (MessageType) {
@@ -12,6 +13,7 @@ var MessageType;
     MessageType[MessageType["RESPONSE_BLOCKCHAIN"] = 2] = "RESPONSE_BLOCKCHAIN";
     MessageType[MessageType["QUERY_TRANSACTION_POOL"] = 3] = "QUERY_TRANSACTION_POOL";
     MessageType[MessageType["RESPONSE_TRANSACTION_POOL"] = 4] = "RESPONSE_TRANSACTION_POOL";
+    MessageType[MessageType["ASK_BLOCK"] = 5] = "ASK_BLOCK";
 })(MessageType || (MessageType = {}));
 class Message {
 }
@@ -32,7 +34,7 @@ const initConnection = (ws) => {
     write(ws, queryChainLengthMsg());
     // query transactions pool only some time after chain query
     setTimeout(() => {
-        broadcast(queryTransactionPoolMsg());
+        exports.broadcast(queryTransactionPoolMsg());
     }, 500);
 };
 const JSONToObject = (data) => {
@@ -89,6 +91,9 @@ const initMessageHandler = (ws) => {
                         }
                     });
                     break;
+                case MessageType.ASK_BLOCK:
+                    p2p_processor_1.handle_ask_block(message.data);
+                    break;
             }
         }
         catch (e) {
@@ -97,9 +102,10 @@ const initMessageHandler = (ws) => {
     });
 };
 const write = (ws, message) => ws.send(JSON.stringify(message));
-const broadcast = (message) => sockets.forEach((socket) => write(socket, message));
+exports.broadcast = (message) => sockets.forEach((socket) => write(socket, message));
 const queryChainLengthMsg = () => ({ 'type': MessageType.QUERY_LATEST, 'data': null });
 const queryAllMsg = () => ({ 'type': MessageType.QUERY_ALL, 'data': null });
+const queryBlock = (nb) => ({ 'type': MessageType.ASK_BLOCK, 'data': JSON.stringify(nb) });
 const responseChainMsg = () => ({
     'type': MessageType.RESPONSE_BLOCKCHAIN, 'data': JSON.stringify(blockchain_1.getBlockchain())
 });
@@ -115,6 +121,8 @@ const responseTransactionPoolMsg = () => ({
     'type': MessageType.RESPONSE_TRANSACTION_POOL,
     'data': JSON.stringify(transactionPool_1.getTransactionPool())
 });
+// REQUESTS IS MOVED HERE
+exports.create__process_block = (nb) => ({ 'type': MessageType.ASK_BLOCK, 'data': JSON.stringify(nb) });
 const initErrorHandler = (ws) => {
     const closeConnection = (myWs) => {
         console.log('connection failed to peer: ' + myWs.url);
@@ -139,12 +147,12 @@ const handleBlockchainResponse = (receivedBlocks) => {
             + latestBlockHeld.index + ' Peer got: ' + latestBlockReceived.index);
         if (latestBlockHeld.hash === latestBlockReceived.previousHash) {
             if (blockchain_1.addBlockToChain(latestBlockReceived)) {
-                broadcast(responseLatestMsg());
+                exports.broadcast(responseLatestMsg());
             }
         }
         else if (receivedBlocks.length === 1) {
             console.log('We have to query the chain from our peer');
-            broadcast(queryAllMsg());
+            exports.broadcast(queryAllMsg());
         }
         else {
             console.log('Received blockchain is longer than current blockchain');
@@ -156,7 +164,7 @@ const handleBlockchainResponse = (receivedBlocks) => {
     }
 };
 const broadcastLatest = () => {
-    broadcast(responseLatestMsg());
+    exports.broadcast(responseLatestMsg());
 };
 exports.broadcastLatest = broadcastLatest;
 const connectToPeers = (newPeer) => {
@@ -170,7 +178,24 @@ const connectToPeers = (newPeer) => {
 };
 exports.connectToPeers = connectToPeers;
 const broadCastTransactionPool = () => {
-    broadcast(responseTransactionPoolMsg());
+    exports.broadcast(responseTransactionPoolMsg());
 };
 exports.broadCastTransactionPool = broadCastTransactionPool;
+function create_transaction_block() {
+}
+exports.create_transaction_block = create_transaction_block;
+function send_block_to_peers(nb) {
+    //let msg = 
+}
+exports.send_block_to_peers = send_block_to_peers;
+function ask_block_from_peers(nb) {
+    exports.broadcast(queryBlock(nb));
+}
+exports.ask_block_from_peers = ask_block_from_peers;
+function write_to_all_peers(msg) {
+    exports.broadcast(msg);
+}
+function write_to_one_peer(ws, msg) {
+    write(ws, msg);
+}
 //# sourceMappingURL=p2p.js.map
