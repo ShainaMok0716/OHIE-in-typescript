@@ -1,6 +1,8 @@
 import * as CryptoJS from 'crypto-js';
 import * as ecdsa from 'elliptic';
 import * as _ from 'lodash';
+import config from './Configuration';
+import {sign_message, verify_message} from './cypto_stuff'
 
 const ec = new ecdsa.ec('secp256k1');
 
@@ -342,3 +344,66 @@ export {
     UnspentTxOut, TxIn, TxOut, getCoinbaseTransaction, getPublicKey, hasDuplicates,
     Transaction
 };
+
+
+const genRanHex = size => [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+
+export function get_random_address(size_in_dwords){
+    let sstream;
+    for( let i=0; i<size_in_dwords; i++)
+        sstream += genRanHex(8);
+
+    return sstream;
+}
+
+export function create_one_transaction(){
+    if(config.fake_transactions){
+        return "0000000000000000000000000000000000000000:0000000000000000000000000000000000000000:0000000000:00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+    }
+
+    let tx = get_random_address(config.ADDRESS_SIZE_IN_DWORDS) + ":" + get_random_address(config.ADDRESS_SIZE_IN_DWORDS) + ":" + Math.random();
+    let sign_tx = sign_message(tx);
+
+    return tx +":"+sign_tx;
+}
+
+export function create_transaction_block(hash, filename){
+    let l = 0
+    let no_txs = 0;
+
+    
+    if ( config.WRITE_BLOCKS_TO_HDD ){
+        //TODO write file
+    }
+    else{
+        while ( l < config.BLOCK_SIZE_IN_BYTES){
+            let tx = create_one_transaction();
+            l += tx.length;
+            no_txs ++;
+        }
+    }
+
+    return no_txs;
+
+}
+
+export function verify_transaction(tx){
+    let s = tx.split(":");
+
+    if(s.length == 4){
+        let ad1 = s[0];
+        let ad2 = s[1];
+        let amount = s[2];
+        let signature = s[3];
+
+        if(ad1.length != 8 * config.ADDRESS_SIZE_IN_DWORDS || ad2.size != 8*config.ADDRESS_SIZE_IN_DWORDS || amount.length <= 0){
+            return false;
+        }
+
+        let full = ad1+":"+ad2+":"+amount;
+
+        return verify_message(full, signature);
+    } else {
+        return false;
+    }
+}

@@ -6,23 +6,26 @@ import {
 } from './blockchain';
 import {Transaction} from './transaction';
 import {getTransactionPool} from './transactionPool';
-import {handle_process_block, handle_ask_block} from './p2p_processor'
+import {Message, create__ask_block, create__process_block, create__got_full_block, 
+    create__have_full_block, create__ask_full_block, create__full_block } from './requests'
+import {process_buffer} from './p2p_processor'
 
-const sockets: WebSocket[] = [];
-
-enum MessageType {
+export enum MessageType {
     QUERY_LATEST = 0,
     QUERY_ALL = 1,
     RESPONSE_BLOCKCHAIN = 2,
     QUERY_TRANSACTION_POOL = 3,
     RESPONSE_TRANSACTION_POOL = 4,
-    ASK_BLOCK = 5,
+    ask_block = 11,
+    process_block = 12,
+    got_full_block = 13,
+    have_full_block = 14,
+    ask_full_block = 15,
+    full_block = 16，
+
 }
 
-class Message {
-    public type: MessageType;
-    public data: any;
-}
+const sockets: WebSocket[] = [];  
 
 const initP2PServer = (p2pPort: number) => {
     const server: Server = new WebSocket.Server({port: p2pPort});
@@ -46,7 +49,7 @@ const initConnection = (ws: WebSocket) => {
     }, 500);
 };
 
-const JSONToObject = <T>(data: string): T => {
+export const JSONToObject = <T>(data: string): T => {
     try {
         return JSON.parse(data);
     } catch (e) {
@@ -100,8 +103,13 @@ const initMessageHandler = (ws: WebSocket) => {
                         }
                     });
                     break;
-                case MessageType.ASK_BLOCK:
-                    handle_ask_block(message.data);
+                case MessageType.ask_block:
+                case MessageType.process_block:
+                case MessageType.got_full_block:
+                case MessageType.have_full_block:
+                case MessageType.ask_full_block:
+                case MessageType.full_block:
+                    process_buffer(ws, message.data);
                     break;
             }
         } catch (e) {
@@ -116,8 +124,6 @@ export const broadcast = (message: Message): void => sockets.forEach((socket) =>
 const queryChainLengthMsg = (): Message => ({'type': MessageType.QUERY_LATEST, 'data': null});
 
 const queryAllMsg = (): Message => ({'type': MessageType.QUERY_ALL, 'data': null});
-
-const queryBlock = (nb: NetworkBlock): Message => ({'type': MessageType.ASK_BLOCK, 'data': JSON.stringify(nb)});
 
 const responseChainMsg = (): Message => ({
     'type': MessageType.RESPONSE_BLOCKCHAIN, 'data': JSON.stringify(getBlockchain())
@@ -137,11 +143,6 @@ const responseTransactionPoolMsg = (): Message => ({
     'type': MessageType.RESPONSE_TRANSACTION_POOL,
     'data': JSON.stringify(getTransactionPool())
 });
-
-
-// REQUESTS IS MOVED HERE
-export const create__process_block = (nb: NetworkBlock): Message => ({'type': MessageType.ASK_BLOCK, 'data': JSON.stringify(nb)});
-
 
 const initErrorHandler = (ws: WebSocket) => {
     const closeConnection = (myWs: WebSocket) => {
@@ -202,24 +203,40 @@ const broadCastTransactionPool = () => {
 
 export {connectToPeers, broadcastLatest, broadCastTransactionPool, initP2PServer, getSockets};
 
-
-export function create_transaction_block(){
-
+export function get_server_folder(){
+    return "_Blockchains/_"+sockets[0].url;
 }
 
-export function send_block_to_peers(nb){
-    let msg = 
-}
-
-export function ask_block_from_peers(nb){
-    broadcast(queryBlock(nb));
-}
-
-
-function write_to_all_peers(msg){
+export function write_to_all_peers(msg){
     broadcast(msg);
 }
 
-function write_to_one_peer(ws, msg){
+export function write_to_one_peer(ws, msg){
     write(ws, msg);
 }
+
+export function send_block_to_one_peer(ws, b){
+    write_to_one_peer(ws, create__process_block(b));
+}
+
+export function send_block_to_peers(nb){
+    broadcast(create__process_block(nb));
+}
+
+let bytes_received = 0;
+let bytes_txs_received = 0;
+let no_verified_transactions = 0;
+
+export function add_bytes_received( br: number,  mbr: number )
+{
+  bytes_received += br;
+  bytes_txs_received += mbr;
+}
+
+export function additional_verified_transaction(add_new: number){
+    no_verified_transactions += add_new;
+}
+
+
+
+
