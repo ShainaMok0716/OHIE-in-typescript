@@ -20,6 +20,11 @@ function padLeft(text:string, padChar:string, size:number): string
     return (String(padChar).repeat(size) + text).substr( (size * -1), size);
 }
 
+export function string_to_blockhash(  h: string ){
+
+	return stoull( h.substr(0, 2*sizeof(BlockHash)), nullptr, 16);
+}
+
 function compute_merkle_tree_root ( leaves: string[] ): string
 {
 	let tmp: string[] = leaves;
@@ -69,6 +74,38 @@ function get_chain_id_from_hash(h: string): number
 	//return stoi ( h.substr(58) ,nullptr,16) % CHAINS;
 	
 	return parseInt(h.substring(58), 16) % config.CHAINS;	
+}
+
+export function verify_merkle_proof( proof:string[] ,  bh:BlockHash,  root:string, index:number )
+{
+
+
+	string h = blockhash_to_string( bh );
+	if ( proof[0] != h && proof[1] != h)	return false;
+
+	int i = 1;
+	while( i+1 < proof.size() ){
+
+		if ( index % 2) h = sha256( proof[i] + h );
+		else h = sha256( h + proof[i] );
+
+		i ++;
+		index /= 2;
+	}
+
+
+	if ( proof[i] != h  || root != h ){
+		cout <<"bad root"<<endl;
+		cout << (proof[i] == h) <<endl;
+		cout << (root==h) << endl;
+		cout << proof[i] << endl;
+		cout << h << endl;
+		cout << root << endl;
+		return false;
+	}
+
+
+	return true;
 }
 
 export {blockhash_to_string,compute_merkle_tree_root,compute_merkle_proof, get_chain_id_from_hash};
