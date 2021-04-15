@@ -1,9 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Transaction = exports.hasDuplicates = exports.getPublicKey = exports.getCoinbaseTransaction = exports.TxOut = exports.TxIn = exports.UnspentTxOut = exports.validateTransaction = exports.isValidAddress = exports.getTransactionId = exports.signTxIn = exports.processTransactions = void 0;
+exports.verify_transaction = exports.create_transaction_block = exports.create_one_transaction = exports.get_random_address = exports.Transaction = exports.hasDuplicates = exports.getPublicKey = exports.getCoinbaseTransaction = exports.TxOut = exports.TxIn = exports.UnspentTxOut = exports.validateTransaction = exports.isValidAddress = exports.getTransactionId = exports.signTxIn = exports.processTransactions = void 0;
 const CryptoJS = require("crypto-js");
 const ecdsa = require("elliptic");
 const _ = require("lodash");
+const Configuration_1 = require("./Configuration");
+const cypto_stuff_1 = require("./cypto_stuff");
 const ec = new ecdsa.ec('secp256k1');
 const COINBASE_AMOUNT = 50;
 class UnspentTxOut {
@@ -296,4 +298,55 @@ const isValidAddress = (address) => {
     return true;
 };
 exports.isValidAddress = isValidAddress;
+const genRanHex = size => [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+function get_random_address(size_in_dwords) {
+    let sstream;
+    for (let i = 0; i < size_in_dwords; i++)
+        sstream += genRanHex(8);
+    return sstream;
+}
+exports.get_random_address = get_random_address;
+function create_one_transaction() {
+    if (Configuration_1.default.fake_transactions) {
+        return "0000000000000000000000000000000000000000:0000000000000000000000000000000000000000:0000000000:00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+    }
+    let tx = get_random_address(Configuration_1.default.ADDRESS_SIZE_IN_DWORDS) + ":" + get_random_address(Configuration_1.default.ADDRESS_SIZE_IN_DWORDS) + ":" + Math.random();
+    let sign_tx = cypto_stuff_1.sign_message(tx);
+    return tx + ":" + sign_tx;
+}
+exports.create_one_transaction = create_one_transaction;
+function create_transaction_block(hash, filename) {
+    let l = 0;
+    let no_txs = 0;
+    if (Configuration_1.default.WRITE_BLOCKS_TO_HDD) {
+        //TODO write file
+    }
+    else {
+        while (l < Configuration_1.default.BLOCK_SIZE_IN_BYTES) {
+            let tx = create_one_transaction();
+            l += tx.length;
+            no_txs++;
+        }
+    }
+    return no_txs;
+}
+exports.create_transaction_block = create_transaction_block;
+function verify_transaction(tx) {
+    let s = tx.split(":");
+    if (s.length == 4) {
+        let ad1 = s[0];
+        let ad2 = s[1];
+        let amount = s[2];
+        let signature = s[3];
+        if (ad1.length != 8 * Configuration_1.default.ADDRESS_SIZE_IN_DWORDS || ad2.size != 8 * Configuration_1.default.ADDRESS_SIZE_IN_DWORDS || amount.length <= 0) {
+            return false;
+        }
+        let full = ad1 + ":" + ad2 + ":" + amount;
+        return cypto_stuff_1.verify_message(full, signature);
+    }
+    else {
+        return false;
+    }
+}
+exports.verify_transaction = verify_transaction;
 //# sourceMappingURL=transaction.js.map

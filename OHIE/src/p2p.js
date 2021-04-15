@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ask_block_from_peers = exports.send_block_to_peers = exports.create_transaction_block = exports.getSockets = exports.initP2PServer = exports.broadCastTransactionPool = exports.broadcastLatest = exports.connectToPeers = exports.create__process_block = exports.broadcast = void 0;
+exports.additional_verified_transaction = exports.add_bytes_received = exports.send_block_to_peers = exports.send_block_to_one_peer = exports.write_to_one_peer = exports.write_to_all_peers = exports.get_server_folder = exports.getSockets = exports.initP2PServer = exports.broadCastTransactionPool = exports.broadcastLatest = exports.connectToPeers = exports.broadcast = exports.JSONToObject = exports.MessageType = void 0;
 const WebSocket = require("ws");
 const blockchain_1 = require("./blockchain");
 const transactionPool_1 = require("./transactionPool");
+const requests_1 = require("./requests");
 const p2p_processor_1 = require("./p2p_processor");
-const sockets = [];
 var MessageType;
 (function (MessageType) {
     MessageType[MessageType["QUERY_LATEST"] = 0] = "QUERY_LATEST";
@@ -13,10 +13,14 @@ var MessageType;
     MessageType[MessageType["RESPONSE_BLOCKCHAIN"] = 2] = "RESPONSE_BLOCKCHAIN";
     MessageType[MessageType["QUERY_TRANSACTION_POOL"] = 3] = "QUERY_TRANSACTION_POOL";
     MessageType[MessageType["RESPONSE_TRANSACTION_POOL"] = 4] = "RESPONSE_TRANSACTION_POOL";
-    MessageType[MessageType["ASK_BLOCK"] = 5] = "ASK_BLOCK";
-})(MessageType || (MessageType = {}));
-class Message {
-}
+    MessageType[MessageType["ask_block"] = 11] = "ask_block";
+    MessageType[MessageType["process_block"] = 12] = "process_block";
+    MessageType[MessageType["got_full_block"] = 13] = "got_full_block";
+    MessageType[MessageType["have_full_block"] = 14] = "have_full_block";
+    MessageType[MessageType["ask_full_block"] = 15] = "ask_full_block";
+    MessageType[MessageType["full_block"] = 16] = "full_block";
+})(MessageType = exports.MessageType || (exports.MessageType = {}));
+const sockets = [];
 const initP2PServer = (p2pPort) => {
     const server = new WebSocket.Server({ port: p2pPort });
     server.on('connection', (ws) => {
@@ -37,7 +41,7 @@ const initConnection = (ws) => {
         exports.broadcast(queryTransactionPoolMsg());
     }, 500);
 };
-const JSONToObject = (data) => {
+exports.JSONToObject = (data) => {
     try {
         return JSON.parse(data);
     }
@@ -49,7 +53,7 @@ const JSONToObject = (data) => {
 const initMessageHandler = (ws) => {
     ws.on('message', (data) => {
         try {
-            const message = JSONToObject(data);
+            const message = exports.JSONToObject(data);
             if (message === null) {
                 console.log('could not parse received JSON message: ' + data);
                 return;
@@ -63,7 +67,7 @@ const initMessageHandler = (ws) => {
                     write(ws, responseChainMsg());
                     break;
                 case MessageType.RESPONSE_BLOCKCHAIN:
-                    const receivedBlocks = JSONToObject(message.data);
+                    const receivedBlocks = exports.JSONToObject(message.data);
                     if (receivedBlocks === null) {
                         console.log('invalid blocks received: %s', JSON.stringify(message.data));
                         break;
@@ -74,7 +78,7 @@ const initMessageHandler = (ws) => {
                     write(ws, responseTransactionPoolMsg());
                     break;
                 case MessageType.RESPONSE_TRANSACTION_POOL:
-                    const receivedTransactions = JSONToObject(message.data);
+                    const receivedTransactions = exports.JSONToObject(message.data);
                     if (receivedTransactions === null) {
                         console.log('invalid transaction received: %s', JSON.stringify(message.data));
                         break;
@@ -91,8 +95,13 @@ const initMessageHandler = (ws) => {
                         }
                     });
                     break;
-                case MessageType.ASK_BLOCK:
-                    p2p_processor_1.handle_ask_block(message.data);
+                case MessageType.ask_block:
+                case MessageType.process_block:
+                case MessageType.got_full_block:
+                case MessageType.have_full_block:
+                case MessageType.ask_full_block:
+                case MessageType.full_block:
+                    p2p_processor_1.process_buffer(ws, message.data);
                     break;
             }
         }
@@ -105,7 +114,6 @@ const write = (ws, message) => ws.send(JSON.stringify(message));
 exports.broadcast = (message) => sockets.forEach((socket) => write(socket, message));
 const queryChainLengthMsg = () => ({ 'type': MessageType.QUERY_LATEST, 'data': null });
 const queryAllMsg = () => ({ 'type': MessageType.QUERY_ALL, 'data': null });
-const queryBlock = (nb) => ({ 'type': MessageType.ASK_BLOCK, 'data': JSON.stringify(nb) });
 const responseChainMsg = () => ({
     'type': MessageType.RESPONSE_BLOCKCHAIN, 'data': JSON.stringify(blockchain_1.getBlockchain())
 });
@@ -121,8 +129,6 @@ const responseTransactionPoolMsg = () => ({
     'type': MessageType.RESPONSE_TRANSACTION_POOL,
     'data': JSON.stringify(transactionPool_1.getTransactionPool())
 });
-// REQUESTS IS MOVED HERE
-exports.create__process_block = (nb) => ({ 'type': MessageType.ASK_BLOCK, 'data': JSON.stringify(nb) });
 const initErrorHandler = (ws) => {
     const closeConnection = (myWs) => {
         console.log('connection failed to peer: ' + myWs.url);
@@ -181,21 +187,36 @@ const broadCastTransactionPool = () => {
     exports.broadcast(responseTransactionPoolMsg());
 };
 exports.broadCastTransactionPool = broadCastTransactionPool;
-function create_transaction_block() {
+function get_server_folder() {
+    return "_Blockchains/_" + sockets[0].url;
 }
-exports.create_transaction_block = create_transaction_block;
-function send_block_to_peers(nb) {
-    //let msg = 
-}
-exports.send_block_to_peers = send_block_to_peers;
-function ask_block_from_peers(nb) {
-    exports.broadcast(queryBlock(nb));
-}
-exports.ask_block_from_peers = ask_block_from_peers;
+exports.get_server_folder = get_server_folder;
 function write_to_all_peers(msg) {
     exports.broadcast(msg);
 }
+exports.write_to_all_peers = write_to_all_peers;
 function write_to_one_peer(ws, msg) {
     write(ws, msg);
 }
+exports.write_to_one_peer = write_to_one_peer;
+function send_block_to_one_peer(ws, b) {
+    write_to_one_peer(ws, requests_1.create__process_block(b));
+}
+exports.send_block_to_one_peer = send_block_to_one_peer;
+function send_block_to_peers(nb) {
+    exports.broadcast(requests_1.create__process_block(nb));
+}
+exports.send_block_to_peers = send_block_to_peers;
+let bytes_received = 0;
+let bytes_txs_received = 0;
+let no_verified_transactions = 0;
+function add_bytes_received(br, mbr) {
+    bytes_received += br;
+    bytes_txs_received += mbr;
+}
+exports.add_bytes_received = add_bytes_received;
+function additional_verified_transaction(add_new) {
+    no_verified_transactions += add_new;
+}
+exports.additional_verified_transaction = additional_verified_transaction;
 //# sourceMappingURL=p2p.js.map

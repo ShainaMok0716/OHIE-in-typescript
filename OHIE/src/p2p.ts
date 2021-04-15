@@ -21,7 +21,7 @@ export enum MessageType {
     got_full_block = 13,
     have_full_block = 14,
     ask_full_block = 15,
-    full_block = 16，
+    full_block = 16,
 
 }
 

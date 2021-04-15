@@ -98,7 +98,8 @@ function mine_new_block(bc: Block[]) : Int64
 
 	// hash to produce the hash of the new block
 	let merkle_root_chains: string = compute_merkle_tree_root( leaves );
-	let merkle_root_txs: string = toString(rng());
+	//let merkle_root_txs: string = toString(rng());
+	let merkle_root_txs: string = Math.random().toString();
 	let h: string= CryptoJS.SHA256( merkle_root_chains + merkle_root_txs ).toString();
 
 	// Determine the chain where it should go

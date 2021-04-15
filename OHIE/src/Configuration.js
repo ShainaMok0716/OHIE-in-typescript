@@ -17,5 +17,11 @@ exports.default = {
     MAX_MINE_BLOCKS: 300000,
     BLOCK_SIZE_IN_BYTES: (4 * 8 * 1024),
     EMPTY_LEAF: "00000000000000000000000000000000",
+    WRITE_BLOCKS_TO_HDD: false,
+    fake_transactions: true,
+    // Sing + verify transactions
+    SIGN_TRANSACTIONS: 0,
+    VERIFY_TRANSACTIONS: 0,
+    ADDRESS_SIZE_IN_DWORDS: 5,
 };
 //# sourceMappingURL=Configuration.js.map

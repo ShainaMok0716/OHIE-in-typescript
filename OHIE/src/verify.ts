@@ -78,12 +78,10 @@ function get_chain_id_from_hash(h: string): number
 
 export function verify_merkle_proof( proof:string[] ,  bh:BlockHash,  root:string, index:number )
 {
-
-
-	string h = blockhash_to_string( bh );
+	let h: string = blockhash_to_string( bh );
 	if ( proof[0] != h && proof[1] != h)	return false;
 
-	int i = 1;
+	let i: number = 1;
 	while( i+1 < proof.size() ){
 
 		if ( index % 2) h = sha256( proof[i] + h );
