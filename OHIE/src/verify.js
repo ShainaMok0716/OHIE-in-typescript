@@ -15,7 +15,8 @@ function padLeft(text, padChar, size) {
     return (String(padChar).repeat(size) + text).substr((size * -1), size);
 }
 function string_to_blockhash(h) {
-    return stoull(h.substr(0, 2 * sizeof(BlockHash)), nullptr, 16);
+    //return stoull( h.substr(0, 2*sizeof(BlockHash)), nullptr, 16);
+    return parseInt(h.substring(0, 2 * 8), 16);
 }
 exports.string_to_blockhash = string_to_blockhash;
 function compute_merkle_tree_root(leaves) {

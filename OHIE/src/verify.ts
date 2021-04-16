@@ -20,9 +20,10 @@ function padLeft(text:string, padChar:string, size:number): string
     return (String(padChar).repeat(size) + text).substr( (size * -1), size);
 }
 
-export function string_to_blockhash(  h: string ){
+export function string_to_blockhash( h: string ){
 
-	return stoull( h.substr(0, 2*sizeof(BlockHash)), nullptr, 16);
+	//return stoull( h.substr(0, 2*sizeof(BlockHash)), nullptr, 16);
+	return parseInt(h.substring(0, 2 * 8),16);
 }
 
 function compute_merkle_tree_root ( leaves: string[] ): string

@@ -85,10 +85,10 @@ function mine_new_block(bc) {
     // Determine the chain where it should go
     let chain_id = verify_1.get_chain_id_from_hash(h);
     // Determine the new block
-    let new_block = string_to_blockhash(h);
+    let new_block = verify_1.string_to_blockhash(h);
     // Create file holding the whole block
     // Supposedly composed of transactions
-    let no_txs = create_transaction_block(new_block, get_server_folder() + "/" + verify_1.blockhash_to_string(new_block));
+    let no_txs = transaction_1.create_transaction_block(new_block, get_server_folder() + "/" + verify_1.blockhash_to_string(new_block));
     if (0 == no_txs) {
         console.log("Cannot create the file with transaction");
         return;
@@ -123,18 +123,18 @@ function mine_new_block(bc) {
         nb.time_partial[j] = 0;
     }
     // Add the block to the chain
-    add_block_by_parent_hash_and_chain_id(parent.hash, new_block, chain_id, nb);
+    blockchain_1.add_block_by_parent_hash_and_chain_id(parent.hash, new_block, chain_id, nb);
     if (Configuration_1.default.PRINT_MINING_MESSAGES) {
         //printf("\033[33;1m[+] Mined block on chain[%d] : [%lx %lx]\n\033[0m", chain_id, parent->hash, new_block);
         console.log("\033[33;1m[+] Mined block on chain[%d] : [%lx %lx]\n\033[0m", chain_id, parent.hash, new_block);
     }
     // Set block flag as full block
-    let bz = find_block_by_hash_and_chain_id(new_block, chain_id);
+    let bz = blockchain_1.find_block_by_hash_and_chain_id(new_block, chain_id);
     if (null != bz && null != bz.nb) {
         bz.is_full_block = true;
     }
     // Increase the miner counter
-    add_mined_block();
+    blockchain_1.add_mined_block();
     // Send the block to peers
     p2p_1.send_block_to_peers(nb);
     //bc->locker_write = false;

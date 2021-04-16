@@ -1,16 +1,16 @@
 ﻿import * as CryptoJS from 'crypto-js';
 import * as Int64 from 'node-int64';
 import {
-    getCoinbaseTransaction, isValidAddress, processTransactions, Transaction, UnspentTxOut
+    getCoinbaseTransaction, isValidAddress, processTransactions, Transaction, UnspentTxOut, create_transaction_block
 } from './transaction';
 import {
     NetworkBlock, Block, getBlockchain, getUnspentTxOuts, getLatestBlock, getDifficulty, findBlock, addBlockToChain,
-	get_deepest_child_by_chain_id
+	get_deepest_child_by_chain_id, add_block_by_parent_hash_and_chain_id, find_block_by_hash_and_chain_id,add_mined_block
 } from './blockchain';
 import { createTransaction, findUnspentTxOuts, getBalance, getPrivateFromWallet, getPublicFromWallet } from './wallet';
 import { broadcastLatest, broadCastTransactionPool,send_block_to_peers } from './p2p';
 import { addToTransactionPool, getTransactionPool, updateTransactionPool } from './transactionPool';
-import { blockhash_to_string, compute_merkle_tree_root,compute_merkle_proof,get_chain_id_from_hash } from './verify';
+import { blockhash_to_string, string_to_blockhash, compute_merkle_tree_root,compute_merkle_proof,get_chain_id_from_hash } from './verify';
 import config from './Configuration';
 
 const getCurrentTimestamp = (): number => Math.round(new Date().getTime() / 1000);
