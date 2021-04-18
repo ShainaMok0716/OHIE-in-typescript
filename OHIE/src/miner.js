@@ -3,13 +3,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.generatenextBlockWithTransaction = exports.generateNextBlock = exports.generateRawNextBlock = void 0;
 const CryptoJS = require("crypto-js");
 const transaction_1 = require("./transaction");
+const p2p_1 = require("./p2p");
 const blockchain_1 = require("./blockchain");
 const wallet_1 = require("./wallet");
-const p2p_1 = require("./p2p");
+const p2p_2 = require("./p2p");
 const transactionPool_1 = require("./transactionPool");
 const verify_1 = require("./verify");
 const Configuration_1 = require("./Configuration");
 const getCurrentTimestamp = () => Math.round(new Date().getTime() / 1000);
+let ser;
 const generateRawNextBlock = (blockData, chainID = 0) => {
     const previousBlock = blockchain_1.getLatestBlock(chainID);
     const difficulty = blockchain_1.getDifficulty(chainID, blockchain_1.getBlockchain());
@@ -17,7 +19,7 @@ const generateRawNextBlock = (blockData, chainID = 0) => {
     const nextTimestamp = getCurrentTimestamp();
     const newBlock = blockchain_1.findBlock(nextIndex, previousBlock.hash, nextTimestamp, blockData, difficulty);
     if (blockchain_1.addBlockToChain(newBlock, chainID)) {
-        p2p_1.broadcastLatest();
+        p2p_2.broadcastLatest();
         return newBlock;
     }
     else {
@@ -88,7 +90,7 @@ function mine_new_block(bc) {
     let new_block = verify_1.string_to_blockhash(h);
     // Create file holding the whole block
     // Supposedly composed of transactions
-    let no_txs = transaction_1.create_transaction_block(new_block, get_server_folder() + "/" + verify_1.blockhash_to_string(new_block));
+    let no_txs = transaction_1.create_transaction_block(new_block, p2p_1.get_server_folder() + "/" + verify_1.blockhash_to_string(new_block));
     if (0 == no_txs) {
         console.log("Cannot create the file with transaction");
         return;
@@ -111,7 +113,7 @@ function mine_new_block(bc) {
     nb.next_rank = trailing_block.nextRank;
     if (nb.next_rank <= nb.rank)
         nb.next_rank = nb.rank + 1;
-    nb.depth = parent.depth + 1;
+    nb.depth = parent.nb.depth + 1;
     let time_of_now;
     let currentdate = new Date();
     time_of_now = Math.round(currentdate.getTime() / 1000) / currentdate.getMilliseconds();
@@ -126,7 +128,7 @@ function mine_new_block(bc) {
     blockchain_1.add_block_by_parent_hash_and_chain_id(parent.hash, new_block, chain_id, nb);
     if (Configuration_1.default.PRINT_MINING_MESSAGES) {
         //printf("\033[33;1m[+] Mined block on chain[%d] : [%lx %lx]\n\033[0m", chain_id, parent->hash, new_block);
-        console.log("\033[33;1m[+] Mined block on chain[%d] : [%lx %lx]\n\033[0m", chain_id, parent.hash, new_block);
+        console.log("033[33;1m[+] Mined block on chain[%d] : [%lx %lx]\n033[0m", chain_id, parent.hash, new_block);
     }
     // Set block flag as full block
     let bz = blockchain_1.find_block_by_hash_and_chain_id(new_block, chain_id);
@@ -136,7 +138,7 @@ function mine_new_block(bc) {
     // Increase the miner counter
     blockchain_1.add_mined_block();
     // Send the block to peers
-    p2p_1.send_block_to_peers(nb);
+    p2p_2.send_block_to_peers(nb);
     //bc->locker_write = false;
     //l.unlock();
     //bc->can_write.notify_one();
@@ -156,6 +158,9 @@ function get_mine_time_in_milliseconds() : Int64
     return msec;
 }
 */
+function setServer(_ser) {
+    this.ser = _ser;
+}
 function miner(bc) {
     /*
     if (! CAN_INTERRUPT)
@@ -181,7 +186,7 @@ function miner(bc) {
         return;
     total_mined++;
     // Incorporate new block into the blockchain and pass it to peers
-    if (null != ser)
+    if (null != this.ser)
         mine_new_block(bc);
     // Mine next block
     miner(bc);

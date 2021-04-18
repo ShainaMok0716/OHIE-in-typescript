@@ -79,29 +79,29 @@ function get_chain_id_from_hash(h: string): number
 
 export function verify_merkle_proof( proof:string[] ,  bh:BlockHash,  root:string, index:number )
 {
-	let h: string = blockhash_to_string( bh );
-	if ( proof[0] != h && proof[1] != h)	return false;
+	//let h: string = blockhash_to_string( bh );
+	//if ( proof[0] != h && proof[1] != h)	return false;
 
-	let i: number = 1;
-	while( i+1 < proof.size() ){
+	//let i: number = 1;
+	//while( i+1 < proof.size() ){
 
-		if ( index % 2) h = sha256( proof[i] + h );
-		else h = sha256( h + proof[i] );
+	//	if ( index % 2) h = sha256( proof[i] + h );
+	//	else h = sha256( h + proof[i] );
 
-		i ++;
-		index /= 2;
-	}
+	//	i ++;
+	//	index /= 2;
+	//}
 
 
-	if ( proof[i] != h  || root != h ){
-		cout <<"bad root"<<endl;
-		cout << (proof[i] == h) <<endl;
-		cout << (root==h) << endl;
-		cout << proof[i] << endl;
-		cout << h << endl;
-		cout << root << endl;
-		return false;
-	}
+	//if ( proof[i] != h  || root != h ){
+	//	cout <<"bad root"<<endl;
+	//	cout << (proof[i] == h) <<endl;
+	//	cout << (root==h) << endl;
+	//	cout << proof[i] << endl;
+	//	cout << h << endl;
+	//	cout << root << endl;
+	//	return false;
+	//}
 
 
 	return true;

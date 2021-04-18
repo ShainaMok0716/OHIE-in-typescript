@@ -1,8 +1,14 @@
 ﻿import * as CryptoJS from 'crypto-js';
 import * as Int64 from 'node-int64';
+import { Server } from 'ws';
+
 import {
-    getCoinbaseTransaction, isValidAddress, processTransactions, Transaction, UnspentTxOut, create_transaction_block
+	getCoinbaseTransaction, isValidAddress, processTransactions, Transaction, UnspentTxOut, create_transaction_block
 } from './transaction';
+import {
+	get_server_folder
+} from './p2p';
+
 import {
     NetworkBlock, Block, getBlockchain, getUnspentTxOuts, getLatestBlock, getDifficulty, findBlock, addBlockToChain,
 	get_deepest_child_by_chain_id, add_block_by_parent_hash_and_chain_id, find_block_by_hash_and_chain_id,add_mined_block
@@ -14,6 +20,8 @@ import { blockhash_to_string, string_to_blockhash, compute_merkle_tree_root,comp
 import config from './Configuration';
 
 const getCurrentTimestamp = (): number => Math.round(new Date().getTime() / 1000);
+
+let ser: Server;
 
 const generateRawNextBlock = (blockData: Transaction[], chainID = 0) => {
     const previousBlock: Block = getLatestBlock(chainID);
@@ -137,7 +145,7 @@ function mine_new_block(bc: Block[]) : Int64
 	if (nb.next_rank <= nb.rank ) 
 		nb.next_rank = nb.rank + 1;
 
-	nb.depth = parent.depth + 1;
+	nb.depth = parent.nb.depth + 1;
 	let time_of_now: number;
 	let currentdate: Date = new Date(); 
 	time_of_now = Math.round(currentdate.getTime() / 1000)/currentdate.getMilliseconds();
@@ -153,7 +161,7 @@ function mine_new_block(bc: Block[]) : Int64
 	add_block_by_parent_hash_and_chain_id( parent.hash, new_block, chain_id, nb );
 	if( config.PRINT_MINING_MESSAGES) {
 		//printf("\033[33;1m[+] Mined block on chain[%d] : [%lx %lx]\n\033[0m", chain_id, parent->hash, new_block);
-		console.log("\033[33;1m[+] Mined block on chain[%d] : [%lx %lx]\n\033[0m", chain_id, parent.hash, new_block);
+		console.log("033[33;1m[+] Mined block on chain[%d] : [%lx %lx]\n033[0m", chain_id, parent.hash, new_block);
 	}
 
 	// Set block flag as full block
@@ -190,6 +198,10 @@ function get_mine_time_in_milliseconds() : Int64
 }
 */
 
+function setServer(_ser: Server) {
+	this.ser = _ser;
+}
+
 function miner( bc: Block[])
 {
 	/*
@@ -219,7 +231,7 @@ function miner( bc: Block[])
 	total_mined++;
 
 	// Incorporate new block into the blockchain and pass it to peers
-	if ( null != ser )
+	if ( null != this.ser )
     	mine_new_block(bc);
 
   	// Mine next block

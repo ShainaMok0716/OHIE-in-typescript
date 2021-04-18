@@ -143,15 +143,15 @@ function handle_full_block(ws, data) {
             let chain_id_from_hash = verify_1.get_chain_id_from_hash(h);
             // Verify the chain ID is correct 
             if (chain_id_from_hash != n.chain_id) {
-                console.log("\033[31;1mChain_id incorrect for the new block \033[0m\n");
+                console.log("033[31;1mChain_id incorrect for the new block 033[0m\n");
             }
             // Verify blockhash is correct
             if (verify_1.string_to_blockhash(h) != n.hash) {
-                console.log("\033[31;1mBlockhash is incorrect\033[0m\n");
+                console.log("033[31;1mBlockhash is incorrect 033[0m\n");
             }
             // Verify the new block chain Merkle proof
             if (!verify_1.verify_merkle_proof(n.proof_new_chain, n.parent, n.merkle_root_chains, chain_id_from_hash)) {
-                console.log("\033[31;1mFailed to verify new block chain Merkle proof \033[0m\n");
+                console.log("033[31;1mFailed to verify new block chain Merkle proof 033[0m\n");
             }
             // Verify trailing 
             // If it cannot find the trailing block then ask for it
@@ -161,7 +161,7 @@ function handle_full_block(ws, data) {
             }
             // Increase amount of received bytes (and include message bytes )
             p2p_1.add_bytes_received(0, data.txs.size());
-            console.log("\033[32;1mAll %4d txs are verified \n\033[0m", tot_transactions);
+            console.log("033[32;1mAll %4d txs are verified \n 033[0m", tot_transactions);
             if (Configuration_1.default.WRITE_BLOCKS_TO_HDD) {
                 //TODO
             }
