@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generatenextBlockWithTransaction = exports.generateNextBlock = exports.generateRawNextBlock = void 0;
+exports.mine_new_block = exports.generatenextBlockWithTransaction = exports.generateNextBlock = exports.generateRawNextBlock = void 0;
 const CryptoJS = require("crypto-js");
 const transaction_1 = require("./transaction");
 const blockchain_1 = require("./blockchain");
@@ -10,6 +10,7 @@ const transactionPool_1 = require("./transactionPool");
 const verify_1 = require("./verify");
 const Configuration_1 = require("./Configuration");
 const getCurrentTimestamp = () => Math.round(new Date().getTime() / 1000);
+let ser;
 const generateRawNextBlock = (blockData, chainID = 0) => {
     const previousBlock = blockchain_1.getLatestBlock(chainID);
     const difficulty = blockchain_1.getDifficulty(chainID, blockchain_1.getBlockchain());
@@ -114,7 +115,7 @@ function mine_new_block(bc) {
     nb.next_rank = trailing_block.nextRank;
     if (nb.next_rank <= nb.rank)
         nb.next_rank = nb.rank + 1;
-    nb.depth = parent.depth + 1;
+    nb.depth = parent.nb.depth + 1;
     let time_of_now;
     let currentdate = new Date();
     time_of_now = Math.round(currentdate.getTime() / 1000) / currentdate.getMilliseconds();
@@ -129,7 +130,7 @@ function mine_new_block(bc) {
     blockchain_1.add_block_by_parent_hash_and_chain_id(parent.hash, new_block, chain_id, nb);
     if (Configuration_1.default.PRINT_MINING_MESSAGES) {
         //printf("\033[33;1m[+] Mined block on chain[%d] : [%lx %lx]\n\033[0m", chain_id, parent->hash, new_block);
-        console.log("\033[33;1m[+] Mined block on chain[%d] : [%lx %lx]\n\033[0m", chain_id, parent.hash, new_block);
+        console.log("033[33;1m[+] Mined block on chain[%d] : [%lx %lx]\n033[0m", chain_id, parent.hash, new_block);
     }
     // Set block flag as full block
     let bz = blockchain_1.find_block_by_hash_and_chain_id(new_block, chain_id);
@@ -145,6 +146,7 @@ function mine_new_block(bc) {
     //bc->can_write.notify_one();
     return chain_id;
 }
+exports.mine_new_block = mine_new_block;
 /*
 function get_mine_time_in_milliseconds() : Int64
 {
@@ -159,6 +161,9 @@ function get_mine_time_in_milliseconds() : Int64
     return msec;
 }
 */
+function setServer(_ser) {
+    this.ser = _ser;
+}
 function miner(bc) {
     /*
     if (! CAN_INTERRUPT)
@@ -184,9 +189,8 @@ function miner(bc) {
         return;
     total_mined++;
     // Incorporate new block into the blockchain and pass it to peers
-    //Comment and test it 
-    //if ( null != ser )
-    mine_new_block(bc);
+    if (null != this.ser)
+        mine_new_block(bc);
     // Mine next block
     miner(bc);
     return;

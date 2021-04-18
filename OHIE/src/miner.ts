@@ -72,7 +72,7 @@ export {
 // Below are the functions that move from miner.cpp
 let total_mined = 0;
 
-function mine_new_block(bc: Block[]) : Int64
+export function mine_new_block(bc: Block[]) : Int64
 {
   	//std::unique_lock<std::mutex> l(bc->lock);
 	//bc->can_write.wait( l, [bc](){return !bc->locker_write;});

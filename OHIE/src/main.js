@@ -67,6 +67,15 @@ const initHttpServer = (myHttpPort) => {
             res.send(newBlock);
         }
     });
+    app.post('/start_mine', (req, res) => {
+        const newBlock = miner_1.mine_new_block(null);
+        if (newBlock === null) {
+            res.status(400).send('could not generate block');
+        }
+        else {
+            res.send(newBlock);
+        }
+    });
     app.get('/balance', (req, res) => {
         const balance = blockchain_1.getAccountBalance();
         res.send({ 'balance': balance });

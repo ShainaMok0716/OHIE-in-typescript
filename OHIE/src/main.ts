@@ -6,7 +6,7 @@ import {
     getBlockchain, getMyUnspentTransactionOutputs, getUnspentTxOuts, sendTransaction, test, initBlockChains
 } from './blockchain';
 import {
-    generateNextBlock, generatenextBlockWithTransaction, generateRawNextBlock
+    generateNextBlock, generatenextBlockWithTransaction, generateRawNextBlock, mine_new_block
 } from './miner';
 import {connectToPeers, getSockets, initP2PServer} from './p2p';
 import {UnspentTxOut} from './transaction';
@@ -79,6 +79,15 @@ const initHttpServer = (myHttpPort: number) => {
 
     app.post('/mineBlock', (req, res) => {
         const newBlock: Block = generateNextBlock();
+        if (newBlock === null) {
+            res.status(400).send('could not generate block');
+        } else {
+            res.send(newBlock);
+        }
+    });
+
+    app.post('/start_mine', (req, res) => {
+        const newBlock = mine_new_block(null);
         if (newBlock === null) {
             res.status(400).send('could not generate block');
         } else {
