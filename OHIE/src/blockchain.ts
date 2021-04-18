@@ -173,24 +173,32 @@ function find_block_by_hash (b:Block, hash: Int64): Block
     return b;
 } 
 
-function insert_block_only_by_hash(r: Block, hash: Int64, newnode: Block): { r:Block, newnode:Block}
+function insert_block_only_by_hash(r: Block, hash: Int64, newnode: Block)
 {
     console.log("insert_block_only_by_hash");
     console.log(r,hash);
     if (undefined == r) {
         let t: Block = new Block(0, "", "", 0, [], 0, 0, 0, 0, 0);
         t.hash = hash;
-        t. is_full_block = false;
+        t.is_full_block = false;
         t.left = t.right = t.child = t.sibling = t.parent = undefined;
         newnode = t;
-        console.log("newnode:", newnode);
-        return { r: t, newnode: t };
+        return [t, t];
     }
+    else {
+        if (r.hash >= hash) {
+            let result = insert_block_only_by_hash(r.left, hash, newnode);
+            r.left = result[0];
+            newnode = result[1];
+        }
+        else if (r.hash < hash) {
+            let result = insert_block_only_by_hash(r.right, hash, newnode);
+            r.right = result[0];
+            newnode = result[1];
+        }
 
-    if (r.hash >= hash) r.left = insert_block_only_by_hash(r.left, hash, newnode).r;
-    else if (r.hash < hash) r.right = insert_block_only_by_hash(r.right, hash, newnode).r;
-
-    return { r, newnode: newnode };
+        return [r, newnode]
+    }
 }
 
 function insert_one_node(r: Block, subtree: Block) {
@@ -242,8 +250,9 @@ function add_block_by_parent_hash(root: Block, parent: Int64, hash: Int64): { ro
         return { root, added:false};
     }
     // Insert the new node (of the child)
-    let { r:r, newnode: newnode } = insert_block_only_by_hash(root, hash, undefined);
-
+    let result = insert_block_only_by_hash(root, hash, undefined);
+    root = result[0];
+    let newnode: Block = result[1];
     if (undefined == newnode) {
         console.log( "Something is wrong, new node is undefined in 'add_child' ")
         return { root, added: false };
@@ -632,6 +641,7 @@ function have_full_block(chain_id: number, hash: Int64): boolean
 
 function find_block_by_hash_and_chain_id(hash: Int64,  chain_id: number):Block
 {
+    console.log("find_block_by_hash_and_chain_id: ", hash, chain_id);
     return find_block_by_hash(blockchains[chain_id], hash);
 
 }
@@ -671,6 +681,7 @@ function still_waiting_for_full_block(hash: Int64, time_of_now: number): boolean
 
 function add_block_by_parent_hash_and_chain_id(parent_hash: Int64, new_block: Int64, chain_id: number, nb: NetworkBlock)  
 {
+    console.log("add_block_by_parent_hash_and_chain_id:", parent_hash, new_block, chain_id);
     add_block_by_parent_hash(blockchains[chain_id], parent_hash, new_block);
 
     let bz: Block = find_block_by_hash(blockchains[chain_id], new_block);

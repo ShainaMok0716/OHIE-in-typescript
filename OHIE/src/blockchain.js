@@ -159,14 +159,21 @@ function insert_block_only_by_hash(r, hash, newnode) {
         t.is_full_block = false;
         t.left = t.right = t.child = t.sibling = t.parent = undefined;
         newnode = t;
-        console.log("newnode:", newnode);
-        return { r: t, newnode: t };
+        return [t, t];
     }
-    if (r.hash >= hash)
-        r.left = insert_block_only_by_hash(r.left, hash, newnode).r;
-    else if (r.hash < hash)
-        r.right = insert_block_only_by_hash(r.right, hash, newnode).r;
-    return { r, newnode: newnode };
+    else {
+        if (r.hash >= hash) {
+            let result = insert_block_only_by_hash(r.left, hash, newnode);
+            r.left = result[0];
+            newnode = result[1];
+        }
+        else if (r.hash < hash) {
+            let result = insert_block_only_by_hash(r.right, hash, newnode);
+            r.right = result[0];
+            newnode = result[1];
+        }
+        return [r, newnode];
+    }
 }
 exports.insert_block_only_by_hash = insert_block_only_by_hash;
 function insert_one_node(r, subtree) {
@@ -214,7 +221,9 @@ function add_block_by_parent_hash(root, parent, hash) {
         return { root, added: false };
     }
     // Insert the new node (of the child)
-    let { r: r, newnode: newnode } = insert_block_only_by_hash(root, hash, undefined);
+    let result = insert_block_only_by_hash(root, hash, undefined);
+    root = result[0];
+    let newnode = result[1];
     if (undefined == newnode) {
         console.log("Something is wrong, new node is undefined in 'add_child' ");
         return { root, added: false };
@@ -526,6 +535,7 @@ function have_full_block(chain_id, hash) {
 }
 exports.have_full_block = have_full_block;
 function find_block_by_hash_and_chain_id(hash, chain_id) {
+    console.log("find_block_by_hash_and_chain_id: ", hash, chain_id);
     return find_block_by_hash(blockchains[chain_id], hash);
 }
 exports.find_block_by_hash_and_chain_id = find_block_by_hash_and_chain_id;
@@ -553,6 +563,7 @@ function still_waiting_for_full_block(hash, time_of_now) {
 }
 exports.still_waiting_for_full_block = still_waiting_for_full_block;
 function add_block_by_parent_hash_and_chain_id(parent_hash, new_block, chain_id, nb) {
+    console.log("add_block_by_parent_hash_and_chain_id:", parent_hash, new_block, chain_id);
     add_block_by_parent_hash(blockchains[chain_id], parent_hash, new_block);
     let bz = find_block_by_hash(blockchains[chain_id], new_block);
     if (undefined != bz) {

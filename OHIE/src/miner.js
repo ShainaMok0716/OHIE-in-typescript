@@ -134,6 +134,7 @@ function mine_new_block(bc) {
     }
     // Set block flag as full block
     let bz = blockchain_1.find_block_by_hash_and_chain_id(new_block, chain_id);
+    console.log("Find new block result:", bz);
     if (null != bz && null != bz.nb) {
         bz.is_full_block = true;
     }
