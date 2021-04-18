@@ -65,21 +65,21 @@ function verify_merkle_proof(proof, bh, root, index) {
     if (proof[0] != h && proof[1] != h)
         return false;
     let i = 1;
-    while (i + 1 < proof.size()) {
+    while (i + 1 < proof.length) {
         if (index % 2)
-            h = sha256(proof[i] + h);
+            h = CryptoJS.SHA256(proof[i] + h).toString();
         else
-            h = sha256(h + proof[i]);
+            h = CryptoJS.SHA256(h + proof[i]).toString();
         i++;
         index /= 2;
     }
     if (proof[i] != h || root != h) {
-        cout << "bad root" << endl;
-        cout << (proof[i] == h) << endl;
-        cout << (root == h) << endl;
-        cout << proof[i] << endl;
-        cout << h << endl;
-        cout << root << endl;
+        console.log("bad root");
+        console.log(proof[i] == h);
+        console.log(root == h);
+        console.log(proof[i]);
+        console.log(h);
+        console.log(root);
         return false;
     }
     return true;

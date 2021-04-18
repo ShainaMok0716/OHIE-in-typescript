@@ -29,6 +29,10 @@ const generateRawNextBlock = (blockData: Transaction[], chainID = 0) => {
     }
 };
 
+const FOLDER_BLOCKS = "";
+const my_ip = "";
+const my_port = "";
+
 const generateNextBlock = (chainID = 0) => {
     const coinbaseTx: Transaction = getCoinbaseTransaction(getPublicFromWallet(), getLatestBlock(chainID).index + 1);
     const blockData: Transaction[] = [coinbaseTx].concat(getTransactionPool());
@@ -110,7 +114,7 @@ function mine_new_block(bc: Block[]) : Int64
 
 	// Create file holding the whole block
 	// Supposedly composed of transactions
-	let no_txs : Int64 = create_transaction_block( new_block , get_server_folder()+"/"+blockhash_to_string( new_block ) ); 
+	let no_txs : Int64 = create_transaction_block( new_block , FOLDER_BLOCKS + "/" + my_ip + "-" + my_port + "/" + blockhash_to_string( new_block ) ); 
 	if( 0 == no_txs  ) {
 		console.log("Cannot create the file with transaction");
 		return;
@@ -219,7 +223,8 @@ function miner( bc: Block[])
 	total_mined++;
 
 	// Incorporate new block into the blockchain and pass it to peers
-	if ( null != ser )
+	//Comment and test it 
+	//if ( null != ser )
     	mine_new_block(bc);
 
   	// Mine next block
