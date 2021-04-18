@@ -98,7 +98,7 @@ const initBlockChains = () => {
             newBlock.nb.time_partial.push(1);
         }
         blockchains.push(newBlock);
-        inBlockchains.push(null);
+        inBlockchains.push(undefined);
         deepest.push(newBlock);
     }
     received_non_full_blocks = new Map();
@@ -132,17 +132,17 @@ function bootstrap_chain(initial_hash) {
     let b = new block_1.Block(0, "", "", 0, [genesisTransaction], 0, 0, 0, 0, 0);
     b.is_full_block = false;
     b.hash = initial_hash;
-    b.left = null;
-    b.right = null;
-    b.child = null;
-    b.parent = null;
-    b.sibling = null;
-    b.nb = null;
+    b.left = undefined;
+    b.right = undefined;
+    b.child = undefined;
+    b.parent = undefined;
+    b.sibling = undefined;
+    b.nb = undefined;
     return b;
 }
 function find_block_by_hash(b, hash) {
-    if (null == b)
-        return null;
+    if (undefined == b)
+        return undefined;
     if (b.hash > hash)
         return find_block_by_hash(b.left, hash);
     else if (b.hash < hash)
@@ -151,11 +151,11 @@ function find_block_by_hash(b, hash) {
 }
 exports.find_block_by_hash = find_block_by_hash;
 function insert_block_only_by_hash(r, hash, newnode) {
-    if (null == r) {
+    if (undefined == r) {
         let t = new block_1.Block(0, "", "", 0, [], 0, 0, 0, 0, 0);
         t.hash = hash;
         t.is_full_block = false;
-        t.left = t.right = t.child = t.sibling = t.parent = null;
+        t.left = t.right = t.child = t.sibling = t.parent = undefined;
         newnode = t;
         return { r: t, newnode };
     }
@@ -167,19 +167,19 @@ function insert_block_only_by_hash(r, hash, newnode) {
 }
 exports.insert_block_only_by_hash = insert_block_only_by_hash;
 function insert_one_node(r, subtree) {
-    if (null == r)
+    if (undefined == r)
         return subtree;
-    if (null == subtree)
+    if (undefined == subtree)
         return r;
     if (r.hash > subtree.hash) {
-        if (r.left == null) {
+        if (r.left == undefined) {
             r.left = subtree;
         }
         else
             r.left = insert_one_node(r.left, subtree);
     }
     else if (r.hash < subtree.hash) {
-        if (r.right == null) {
+        if (r.right == undefined) {
             r.right = subtree;
         }
         else
@@ -192,11 +192,11 @@ function insert_one_node(r, subtree) {
 }
 exports.insert_one_node = insert_one_node;
 function insert_subtree_by_hash(r, subtree) {
-    if (null == subtree)
+    if (undefined == subtree)
         return r;
     let left = subtree.left;
     let right = subtree.right;
-    subtree.left = subtree.right = null;
+    subtree.left = subtree.right = undefined;
     r = insert_one_node(r, subtree);
     r = insert_subtree_by_hash(r, left);
     r = insert_subtree_by_hash(r, right);
@@ -206,25 +206,25 @@ exports.insert_subtree_by_hash = insert_subtree_by_hash;
 function add_block_by_parent_hash(root, parent, hash) {
     // Find the parent block node by parent's Int64
     let p = find_block_by_hash(root, parent);
-    if (null == p) {
+    if (undefined == p) {
         console.log("Cannot find parent for ");
         return { root, added: false };
     }
     // Insert the new node (of the child)
-    const { r, newnode } = insert_block_only_by_hash(root, hash, null);
-    if (null == newnode) {
-        console.log("Something is wrong, new node is null in 'add_child' ");
+    const { r, newnode } = insert_block_only_by_hash(root, hash, undefined);
+    if (undefined == newnode) {
+        console.log("Something is wrong, new node is undefined in 'add_child' ");
         return { root, added: false };
     }
     // Set the parent of the new node
     newnode.parent = p;
     // Set the new node as one of parents children
-    if (null == p.child) {
+    if (undefined == p.child) {
         p.child = newnode;
     }
     else {
         let z = p.child;
-        while (z.sibling != null)
+        while (z.sibling != undefined)
             z = z.sibling;
         z.sibling = newnode;
     }
@@ -232,11 +232,11 @@ function add_block_by_parent_hash(root, parent, hash) {
 }
 exports.add_block_by_parent_hash = add_block_by_parent_hash;
 function find_number_of_nodes(r) {
-    if (null == r)
+    if (undefined == r)
         return 0;
     let n = 0;
     let c = r.child;
-    while (null != c) {
+    while (undefined != c) {
         n += find_number_of_nodes(c);
         c = c.sibling;
     }
@@ -245,15 +245,15 @@ function find_number_of_nodes(r) {
 exports.find_number_of_nodes = find_number_of_nodes;
 //Incomplete Part
 function remove_one_chain(l, to_be_removed) {
-    if (null == l)
-        return null;
+    if (undefined == l)
+        return undefined;
     if (l == to_be_removed) {
         let t = l.next;
         return t;
     }
     else {
         let t = l;
-        while (null != t && t.next != to_be_removed)
+        while (undefined != t && t.next != to_be_removed)
             t = t.next;
         if (t.next == to_be_removed) {
             t.next = t.next.next;
@@ -263,23 +263,23 @@ function remove_one_chain(l, to_be_removed) {
 }
 exports.remove_one_chain = remove_one_chain;
 function is_incomplete_hash(l, hash) {
-    if (null == l)
-        return null;
+    if (undefined == l)
+        return undefined;
     let t = l;
-    while (null != l && l.b.hash != hash)
+    while (undefined != l && l.b.hash != hash)
         l = l.next;
-    if (null != l && null != l.b && l.b.hash == hash)
+    if (undefined != l && undefined != l.b && l.b.hash == hash)
         return l;
-    return null;
+    return undefined;
 }
 exports.is_incomplete_hash = is_incomplete_hash;
 function is_in_incomplete(l, parent_hash, child_hash) {
-    if (null == l)
+    if (undefined == l)
         return false;
     let t = l;
-    while (null != t) {
+    while (undefined != t) {
         let b = find_block_by_hash(t.b, child_hash);
-        if (null != b && b.parent != null && b.parent.hash == parent_hash)
+        if (undefined != b && b.parent != undefined && b.parent.hash == parent_hash)
             return true;
         t = t.next;
     }
@@ -287,56 +287,56 @@ function is_in_incomplete(l, parent_hash, child_hash) {
 }
 exports.is_in_incomplete = is_in_incomplete;
 function find_incomplete_block(l, child_hash) {
-    if (null == l)
-        return null;
+    if (undefined == l)
+        return undefined;
     let t = l;
-    while (null != t) {
+    while (undefined != t) {
         let b = find_block_by_hash(t.b, child_hash);
-        if (null != b)
+        if (undefined != b)
             return b;
         t = t.next;
     }
-    return null;
+    return undefined;
 }
 exports.find_incomplete_block = find_incomplete_block;
 function add_block_to_incomplete(l, parent_hash, child_hash) {
-    if (null == l) {
-        let bl = null;
+    if (undefined == l) {
+        let bl = undefined;
         bl = bootstrap_chain(parent_hash);
         bl = add_block_by_parent_hash(bl, parent_hash, child_hash).root;
         let bi = new block_1.IncompleteBlock();
         bi.b = bl;
-        bi.next = null;
+        bi.next = undefined;
         bi.last_asked = 0;
         bi.no_asks = 0;
         return bi;
     }
     let tmp = l, penultimate;
-    let ch, ph = null;
-    while (null != tmp) {
-        if (null == ch)
-            ch = (find_block_by_hash(tmp.b, child_hash) != null) ? tmp : null;
-        if (null == ph)
-            ph = (find_block_by_hash(tmp.b, parent_hash) != null) ? tmp : null;
+    let ch, ph = undefined;
+    while (undefined != tmp) {
+        if (undefined == ch)
+            ch = (find_block_by_hash(tmp.b, child_hash) != undefined) ? tmp : undefined;
+        if (undefined == ph)
+            ph = (find_block_by_hash(tmp.b, parent_hash) != undefined) ? tmp : undefined;
         penultimate = tmp;
         tmp = tmp.next;
     }
     // Neither parent nor child hash has been found
-    if (null == ch && null == ph) {
-        let bl = null;
+    if (undefined == ch && undefined == ph) {
+        let bl = undefined;
         bl = bootstrap_chain(parent_hash);
         bl = add_block_by_parent_hash(bl, parent_hash, child_hash).root;
         let bi = new block_1.IncompleteBlock();
         bi.b = bl;
-        bi.next = null;
+        bi.next = undefined;
         bi.last_asked = 0;
         bi.no_asks = 0;
         penultimate.next = bi;
     }
-    else if (null == ch) {
+    else if (undefined == ch) {
         ph.b = add_block_by_parent_hash(ph.b, parent_hash, child_hash).root;
     }
-    else if (null == ph) {
+    else if (undefined == ph) {
         let bl = bootstrap_chain(parent_hash);
         let tmp = ch.b;
         bl = insert_subtree_by_hash(bl, ch.b);
@@ -352,10 +352,10 @@ function add_block_to_incomplete(l, parent_hash, child_hash) {
         let parent_block = find_block_by_hash(ph.b, parent_hash);
         Ztmp.parent = parent_block;
         let tmp = parent_block.child;
-        if (null == tmp)
+        if (undefined == tmp)
             parent_block.child = Ztmp;
         else {
-            while (tmp.sibling != null)
+            while (tmp.sibling != undefined)
                 tmp = tmp.sibling;
             tmp.sibling = Ztmp;
         }
@@ -365,10 +365,10 @@ function add_block_to_incomplete(l, parent_hash, child_hash) {
 }
 exports.add_block_to_incomplete = add_block_to_incomplete;
 function find_number_of_incomplete_blocks(l) {
-    if (null == l)
+    if (undefined == l)
         return 0;
     let no = 0;
-    while (null != l) {
+    while (undefined != l) {
         no += find_number_of_nodes(l.b);
         l = l.next;
     }
@@ -377,36 +377,36 @@ function find_number_of_incomplete_blocks(l) {
 exports.find_number_of_incomplete_blocks = find_number_of_incomplete_blocks;
 //print fuinction
 function print_blocks(root) {
-    if (null == root)
+    if (undefined == root)
         return;
     print_blocks(root.left);
-    console.log("%8lx : %4d : %8lx : %d %d %d %d %d :  %d \n", root.hash, root.nb.depth, (root.parent == null) ? 0 : root.parent.hash, root.left != null, root.right != null, root.child != null, root.parent != null, root.sibling != null, root.nb.depth);
+    console.log("%8lx : %4d : %8lx : %d %d %d %d %d :  %d \n", root.hash, root.nb.depth, (root.parent == undefined) ? 0 : root.parent.hash, root.left != undefined, root.right != undefined, root.child != undefined, root.parent != undefined, root.sibling != undefined, root.nb.depth);
     print_blocks(root.right);
 }
 function print_full_tree(root) {
-    if (null == root)
+    if (undefined == root)
         return;
     console.log(" << hex <<" + root.hash + " << dec << (" + root.nb.depth + ") <<   :  ");
     let t = root.child;
-    while (null != t) {
+    while (undefined != t) {
         console.log(" << hex <<" + t.hash + "<< ");
         t = t.sibling;
     }
     t = root.child;
-    while (null != t) {
-        if (t.child != null)
+    while (undefined != t) {
+        if (t.child != undefined)
             print_full_tree(t);
         t = t.sibling;
     }
 }
 function print_all_incomplete_chains(l) {
-    if (null == l)
+    if (undefined == l)
         return;
     print_full_tree(l.b);
     print_all_incomplete_chains(l.next);
 }
 function print_hash_tree(root) {
-    if (null == root)
+    if (undefined == root)
         return;
     print_hash_tree(root.left);
     console.log("Z: %lx\n", root.hash);
@@ -421,24 +421,24 @@ const add_received_block = (chain_id, parent, hash, nb) => {
     let added = false;
     let isIncomplete = false;
     // If block is already in the chain, then do nothing
-    if (find_block_by_hash(blockchains[chain_id], hash) != null)
+    if (find_block_by_hash(blockchains[chain_id], hash) != undefined)
         return { added, isIncomplete };
     added = true;
     // If parent hash is already in the tree, then just add the child
-    if (find_block_by_hash(blockchains[chain_id], parent) != null) {
+    if (find_block_by_hash(blockchains[chain_id], parent) != undefined) {
         // Check if child hash is in incompletes
         let bi = is_incomplete_hash(inBlockchains[chain_id], hash);
-        if (bi != null) {
+        if (bi != undefined) {
             let parent_block = find_block_by_hash(blockchains[chain_id], parent);
             let child_block = bi.b;
             blockchains[chain_id] = insert_subtree_by_hash(blockchains[chain_id], child_block);
             add_subtree_to_received_non_full(child_block, chain_id);
             child_block.parent = parent_block;
             let tmp = parent_block.child;
-            if (null == tmp)
+            if (undefined == tmp)
                 parent_block.child = child_block;
             else {
-                while (tmp.sibling != null)
+                while (tmp.sibling != undefined)
                     tmp = tmp.sibling;
                 tmp.sibling = child_block;
             }
@@ -456,7 +456,7 @@ const add_received_block = (chain_id, parent, hash, nb) => {
         }
         // Add full block info
         let bz = find_block_by_hash(blockchains[chain_id], hash);
-        if (null != bz) {
+        if (undefined != bz) {
             bz.nb = new block_1.NetworkBlock();
             added = true;
             //  Update deepest
@@ -475,7 +475,7 @@ const add_received_block = (chain_id, parent, hash, nb) => {
         // Add this to incomplete chain
         inBlockchains[chain_id] = add_block_to_incomplete(inBlockchains[chain_id], parent, hash);
         let bz = find_incomplete_block(inBlockchains[chain_id], hash);
-        if (null != bz) {
+        if (undefined != bz) {
             bz.nb = new block_1.NetworkBlock();
         }
         // Ask for parent hash
@@ -487,7 +487,7 @@ const add_received_block = (chain_id, parent, hash, nb) => {
 };
 exports.add_received_block = add_received_block;
 function add_subtree_to_received_non_full(b, chain_id) {
-    if (null == b)
+    if (undefined == b)
         return;
     let hash = b.hash;
     if (received_non_full_blocks[hash] == received_non_full_blocks.values()[received_non_full_blocks.size - 1] && !have_full_block(chain_id, hash)) {
@@ -495,20 +495,20 @@ function add_subtree_to_received_non_full(b, chain_id) {
         total_received_blocks++;
     }
     let c = b.child;
-    while (null != c) {
+    while (undefined != c) {
         add_subtree_to_received_non_full(c, chain_id);
         c = c.sibling;
     }
 }
 exports.add_subtree_to_received_non_full = add_subtree_to_received_non_full;
 function find_max_depth(r) {
-    if (null == r)
-        return null;
+    if (undefined == r)
+        return undefined;
     let mx = r;
     let tmp = r.child;
-    while (null != tmp) {
+    while (undefined != tmp) {
         let fm = find_max_depth(tmp);
-        if (null != fm && fm.nb.depth > mx.nb.depth)
+        if (undefined != fm && fm.nb.depth > mx.nb.depth)
             mx = fm;
         tmp = tmp.sibling;
     }
@@ -517,7 +517,7 @@ function find_max_depth(r) {
 exports.find_max_depth = find_max_depth;
 function have_full_block(chain_id, hash) {
     let bz = find_block_by_hash(blockchains[chain_id], hash);
-    if (null != bz && bz.is_full_block)
+    if (undefined != bz && bz.is_full_block)
         return true;
     return false;
 }
@@ -535,7 +535,7 @@ function get_incomplete_chain(chain_id) {
 }
 exports.get_incomplete_chain = get_incomplete_chain;
 function get_deepest_child_by_chain_id(chain_id) {
-    if (null == deepest[chain_id]) {
+    if (undefined == deepest[chain_id]) {
         console.log("Something is wrong with get_deepest_child_by_chain_id\n");
     }
     return deepest[chain_id];
@@ -552,8 +552,8 @@ exports.still_waiting_for_full_block = still_waiting_for_full_block;
 function add_block_by_parent_hash_and_chain_id(parent_hash, new_block, chain_id, nb) {
     add_block_by_parent_hash(blockchains[chain_id], parent_hash, new_block);
     let bz = find_block_by_hash(blockchains[chain_id], new_block);
-    if (null != bz) {
-        this.deepest[chain_id] = bz;
+    if (undefined != bz) {
+        deepest[chain_id] = bz;
         bz.nb = new block_1.NetworkBlock();
     }
 }
@@ -561,7 +561,7 @@ exports.add_block_by_parent_hash_and_chain_id = add_block_by_parent_hash_and_cha
 function get_incomplete_chain_hashes(chain_id, time_of_now) {
     let hashes = [];
     let t = inBlockchains[chain_id];
-    while (null != t) {
+    while (undefined != t) {
         let nextt = t.next;
         if (time_of_now - t.last_asked > Configuration_1.default.ASK_FOR_INCOMPLETE_INDIVIDUAL_MILLISECONDS) {
             t.last_asked = time_of_now;
@@ -582,11 +582,11 @@ function set_block_full(chain_id, hash, misc) {
     if (waiting_for_full_blocks[hash] != waiting_for_full_blocks.values()[waiting_for_full_blocks.size])
         waiting_for_full_blocks.delete(hash);
     let bz = find_block_by_hash(this.chains[chain_id], hash);
-    if (null != bz) {
+    if (undefined != bz) {
         bz.is_full_block = true;
         processed_full_blocks++;
         // Define time_received
-        if (bz.nb != null) {
+        if (bz.nb != undefined) {
             let time_of_now = Date.now();
             if (time_of_now > bz.nb.time_mined) {
                 bz.nb.time_received = time_of_now;
@@ -617,9 +617,9 @@ function get_non_full_blocks(time_of_now) {
     //    if (Date.now() - itsecond.second > ASK_FOR_FULL_BLOCKS_INDIVIDUAL_EACH_MILLISECONDS) {
     //        it.second = make_pair(it -> second.first, time_of_now);
     //        let bz: Block = find_block_by_hash(blockchains[it.second.first], it -> first);
-    //        if (null != bz && !(bz.is_full_block))
+    //        if (undefined != bz && !(bz.is_full_block))
     //            nfb.push_back(make_pair(it -> first, it -> second.first));
-    //        else if (NULL != bz && bz -> is_full_block)
+    //        else if (undefined != bz && bz -> is_full_block)
     //            to_remove.push_back(it -> first);
     //        if (nfb.size >= MAX_ASK_NON_FULL_IN_ONE_GO) break;
     //    }
@@ -658,12 +658,12 @@ function update_blocks_commited_time() {
             // Discard the last 
             let t = deepest[i];
             let count = 0;
-            while (null != t && count++ < Configuration_1.default.T_DISCARD[j])
+            while (undefined != t && count++ < Configuration_1.default.T_DISCARD[j])
                 t = t.parent;
-            if (null == t)
+            if (undefined == t)
                 continue;
-            while (null != t) {
-                if (t.is_full_block && null != t.nb && 0 == t.nb.time_partial[j] && time_of_now > t.nb.time_mined) {
+            while (undefined != t) {
+                if (t.is_full_block && undefined != t.nb && 0 == t.nb.time_partial[j] && time_of_now > t.nb.time_mined) {
                     t.nb.time_partial[j] = time_of_now;
                     partially_total[j]++;
                     partially_latency[j] += t.nb.time_partial[j] - t.nb.time_mined;
@@ -688,14 +688,14 @@ function update_blocks_commited_time() {
             // Discard the last 
             let t = deepest[i];
             let count = 0;
-            while (null != t && count++ < Configuration_1.default.T_DISCARD[j])
+            while (undefined != t && count++ < Configuration_1.default.T_DISCARD[j])
                 t = t.parent;
-            if (null == t) {
+            if (undefined == t) {
                 stop_this_j = true;
                 break;
                 //return;
             }
-            if (t.nb == null) {
+            if (t.nb == undefined) {
                 stop_this_j = true;
                 break;
                 //return;
@@ -714,12 +714,12 @@ function update_blocks_commited_time() {
             // Discard the last 
             let t = deepest[i];
             let count = 0;
-            while (null != t && count++ < Configuration_1.default.T_DISCARD[j])
+            while (undefined != t && count++ < Configuration_1.default.T_DISCARD[j])
                 t = t.parent;
-            if (null == t)
+            if (undefined == t)
                 continue;
-            while (null != t) {
-                if (t.is_full_block && null != t.nb && t.nb.next_rank < confirm_bar && 0 == t.nb.time_commited[j] && time_of_now > t.nb.time_mined) {
+            while (undefined != t) {
+                if (t.is_full_block && undefined != t.nb && t.nb.next_rank < confirm_bar && 0 == t.nb.time_commited[j] && time_of_now > t.nb.time_mined) {
                     t.nb.time_commited[j] = time_of_now;
                     commited_total[j]++;
                     commited_latency[j] += t.nb.time_commited[j] - t.nb.time_mined;
@@ -835,7 +835,7 @@ const isValidChain = (blockchainToValidate) => {
         return JSON.stringify(block) === JSON.stringify("");
     };
     if (!isValidGenesis(blockchainToValidate[0])) {
-        return null;
+        return undefined;
     }
     /*
     Validate each block in the chain. The block is valid if the block structure is valid
@@ -845,12 +845,12 @@ const isValidChain = (blockchainToValidate) => {
     for (let i = 0; i < blockchainToValidate.length; i++) {
         const currentBlock = blockchainToValidate[i];
         if (i !== 0 && !isValidNewBlock(blockchainToValidate[i], blockchainToValidate[i - 1])) {
-            return null;
+            return undefined;
         }
         aUnspentTxOuts = transaction_1.processTransactions(currentBlock.data, aUnspentTxOuts, currentBlock.index);
-        if (aUnspentTxOuts === null) {
+        if (aUnspentTxOuts === undefined) {
             console.log('invalid transactions in blockchain');
-            return null;
+            return undefined;
         }
     }
     return aUnspentTxOuts;
@@ -858,7 +858,7 @@ const isValidChain = (blockchainToValidate) => {
 const addBlockToChain = (newBlock, chainID = 0) => {
     if (isValidNewBlock(newBlock, getLatestBlock(chainID))) {
         const retVal = transaction_1.processTransactions(newBlock.data, getUnspentTxOuts(), newBlock.index);
-        if (retVal === null) {
+        if (retVal === undefined) {
             console.log('block is not valid in terms of transactions');
             return false;
         }
@@ -874,7 +874,7 @@ const addBlockToChain = (newBlock, chainID = 0) => {
 exports.addBlockToChain = addBlockToChain;
 const replaceChain = (newBlocks, chainID = 0) => {
     const aUnspentTxOuts = isValidChain(newBlocks);
-    const validChain = aUnspentTxOuts !== null;
+    const validChain = aUnspentTxOuts !== undefined;
     if (validChain &&
         getAccumulatedDifficulty(newBlocks) > getAccumulatedDifficulty(getBlockchain())) {
         console.log('Received blockchain is valid. Replacing current blockchain with received blockchain');

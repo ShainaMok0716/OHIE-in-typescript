@@ -101,7 +101,7 @@ function mine_new_block(bc) {
     let proof_new_chain = verify_1.compute_merkle_proof(leaves, chain_id);
     // Last block of the chain where new block will be mined
     let parent = blockchain_1.get_deepest_child_by_chain_id(chain_id);
-    let nb;
+    let nb = new blockchain_1.NetworkBlock();
     nb.chain_id = chain_id;
     nb.parent = parent.hash;
     nb.hash = new_block;

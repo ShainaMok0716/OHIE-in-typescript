@@ -23,7 +23,10 @@ class NetworkBlock{
 	public time_commited: number[];
 	public time_partial: number[];
 
-	constructor(){
+	constructor() {
+		this.time_commited = [];
+		this.time_partial = [];
+		this.proof_new_chain = [];
 	}
 
 }

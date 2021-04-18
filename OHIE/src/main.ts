@@ -91,6 +91,7 @@ const initHttpServer = (myHttpPort: number) => {
         if (newBlock === null) {
             res.status(400).send('could not generate block');
         } else {
+            console.log("try to send new block");
             res.send(newBlock);
         }
     });

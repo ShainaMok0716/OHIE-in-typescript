@@ -46,7 +46,7 @@ function compute_merkle_proof( leaves: string[], index: number ): string[]
 {
 	let first_index: number  = index;
 
-	let proof: string[];
+	let proof: string[] = [];
 	proof.push( leaves[index] );
 	let tmp: string[] = leaves;
 	while( tmp.length > 1 ){

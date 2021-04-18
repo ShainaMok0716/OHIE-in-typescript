@@ -134,7 +134,7 @@ export function mine_new_block(bc: Block[]) : Int64
 	// Last block of the chain where new block will be mined
 	let parent: Block = get_deepest_child_by_chain_id( chain_id );
 
-	let nb: NetworkBlock;
+	let nb: NetworkBlock = new NetworkBlock();
 	nb.chain_id = chain_id;
 	nb.parent = parent.hash;
 	nb.hash = new_block;

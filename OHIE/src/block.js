@@ -3,6 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.IncompleteBlock = exports.Block = exports.NetworkBlock = void 0;
 class NetworkBlock {
     constructor() {
+        this.time_commited = [];
+        this.time_partial = [];
+        this.proof_new_chain = [];
     }
 }
 exports.NetworkBlock = NetworkBlock;

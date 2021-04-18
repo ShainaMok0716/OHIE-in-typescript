@@ -36,7 +36,7 @@ function compute_merkle_tree_root(leaves) {
 exports.compute_merkle_tree_root = compute_merkle_tree_root;
 function compute_merkle_proof(leaves, index) {
     let first_index = index;
-    let proof;
+    let proof = [];
     proof.push(leaves[index]);
     let tmp = leaves;
     while (tmp.length > 1) {
