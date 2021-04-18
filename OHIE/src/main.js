@@ -8,8 +8,8 @@ const miner_1 = require("./miner");
 const p2p_1 = require("./p2p");
 const transactionPool_1 = require("./transactionPool");
 const wallet_1 = require("./wallet");
-const httpPort = parseInt(process.env.HTTP_PORT) || 3001;
-const p2pPort = parseInt(process.env.P2P_PORT) || 6001;
+let httpPort = parseInt(process.env.HTTP_PORT) || 3001;
+let p2pPort = parseInt(process.env.P2P_PORT) || 6001;
 const initHttpServer = (myHttpPort) => {
     const app = express();
     app.use(bodyParser.json());
@@ -131,8 +131,25 @@ const initHttpServer = (myHttpPort) => {
         console.log('Listening http on port: ' + myHttpPort);
     });
 };
-blockchain_1.initBlockChains();
-initHttpServer(httpPort);
-p2p_1.initP2PServer(p2pPort);
-wallet_1.initWallet();
+function startTest() {
+    var readline = require('readline');
+    var rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+    rl.question("httpPort? ", function (answer) {
+        httpPort = answer;
+        rl.question("p2pPort? ", function (answer) {
+            p2pPort = answer;
+            rl.close();
+            //finish port setting
+            blockchain_1.initBlockChains();
+            initHttpServer(httpPort);
+            p2p_1.initP2PServer(p2pPort);
+            wallet_1.initWallet();
+        });
+    });
+    return false;
+}
+startTest();
 //# sourceMappingURL=main.js.map

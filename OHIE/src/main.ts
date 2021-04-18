@@ -14,8 +14,8 @@ import {getTransactionPool} from './transactionPool';
 import {getPublicFromWallet, initWallet} from './wallet';
 import { log } from 'util';
 
-const httpPort: number = parseInt(process.env.HTTP_PORT) || 3001;
-const p2pPort: number = parseInt(process.env.P2P_PORT) || 6001;
+let httpPort: number = parseInt(process.env.HTTP_PORT) || 3001;
+let p2pPort: number = parseInt(process.env.P2P_PORT) || 6001;
 
 
 const initHttpServer = (myHttpPort: number) => {
@@ -157,7 +157,31 @@ const initHttpServer = (myHttpPort: number) => {
     });
 };
 
-initBlockChains();
-initHttpServer(httpPort);
-initP2PServer(p2pPort);
-initWallet();
+function startTest() {
+
+    var readline = require('readline');
+
+    var rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    rl.question("httpPort? ", function (answer) {
+        httpPort = answer;
+        rl.question("p2pPort? ", function (answer) {
+            p2pPort = answer;
+            rl.close();
+
+            //finish port setting
+            initBlockChains();
+            initHttpServer(httpPort);
+            initP2PServer(p2pPort);
+            initWallet();
+
+        });
+    });
+
+    return false;
+}
+
+startTest();
