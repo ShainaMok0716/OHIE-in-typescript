@@ -151,19 +151,22 @@ function find_block_by_hash(b, hash) {
 }
 exports.find_block_by_hash = find_block_by_hash;
 function insert_block_only_by_hash(r, hash, newnode) {
+    console.log("insert_block_only_by_hash");
+    console.log(r, hash);
     if (undefined == r) {
         let t = new block_1.Block(0, "", "", 0, [], 0, 0, 0, 0, 0);
         t.hash = hash;
         t.is_full_block = false;
         t.left = t.right = t.child = t.sibling = t.parent = undefined;
         newnode = t;
-        return { r: t, newnode };
+        console.log("newnode:", newnode);
+        return { r: t, newnode: t };
     }
     if (r.hash >= hash)
         r.left = insert_block_only_by_hash(r.left, hash, newnode).r;
     else if (r.hash < hash)
         r.right = insert_block_only_by_hash(r.right, hash, newnode).r;
-    return { r, newnode };
+    return { r, newnode: newnode };
 }
 exports.insert_block_only_by_hash = insert_block_only_by_hash;
 function insert_one_node(r, subtree) {
@@ -211,7 +214,7 @@ function add_block_by_parent_hash(root, parent, hash) {
         return { root, added: false };
     }
     // Insert the new node (of the child)
-    const { r, newnode } = insert_block_only_by_hash(root, hash, undefined);
+    let { r: r, newnode: newnode } = insert_block_only_by_hash(root, hash, undefined);
     if (undefined == newnode) {
         console.log("Something is wrong, new node is undefined in 'add_child' ");
         return { root, added: false };
