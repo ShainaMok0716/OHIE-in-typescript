@@ -167,17 +167,17 @@ function handle_full_block(ws: WebSocket, data){
 
             // Verify the chain ID is correct 
           if ( chain_id_from_hash != n.chain_id ){
-              console.log("\033[31;1mChain_id incorrect for the new block \033[0m\n");
+              console.log("033[31;1mChain_id incorrect for the new block 033[0m\n");
           }
 
           // Verify blockhash is correct
           if ( string_to_blockhash( h ) != n.hash ){
-              console.log("\033[31;1mBlockhash is incorrect\033[0m\n");
+              console.log("033[31;1mBlockhash is incorrect 033[0m\n");
           }
 
           // Verify the new block chain Merkle proof
           if (! verify_merkle_proof( n.proof_new_chain, n.parent, n.merkle_root_chains, chain_id_from_hash )){
-              console.log("\033[31;1mFailed to verify new block chain Merkle proof \033[0m\n");
+              console.log("033[31;1mFailed to verify new block chain Merkle proof 033[0m\n");
           }
 
           // Verify trailing 
@@ -190,7 +190,7 @@ function handle_full_block(ws: WebSocket, data){
           // Increase amount of received bytes (and include message bytes )
           add_bytes_received( 0, data.txs.size() );
 
-          console.log("\033[32;1mAll %4d txs are verified \n\033[0m", tot_transactions);
+          console.log("033[32;1mAll %4d txs are verified \n 033[0m", tot_transactions);
 
           if ( config.WRITE_BLOCKS_TO_HDD ){
               //TODO
