@@ -1,14 +1,17 @@
 import * as WebSocket from 'ws';
 import {Server} from 'ws';
 import {
-    addBlockToChain, Block, getBlockchain, getLatestBlock, handleReceivedTransaction, isValidBlockStructure,
-    replaceChain, NetworkBlock
+    addBlockToChain, Block, getBlockchain, getLatestBlock, handleReceivedTransaction, isValidBlockStructure,update_blocks_commited_time, 
+    replaceChain, NetworkBlock, BlockHash,
+    get_incomplete_chain_hashes, get_non_full_blocks
 } from './blockchain';
 import {Transaction} from './transaction';
 import {getTransactionPool} from './transactionPool';
 import {Message, create__ask_block, create__process_block, create__got_full_block, 
     create__have_full_block, create__ask_full_block, create__full_block } from './requests'
 import {process_buffer} from './p2p_processor'
+import config from './Configuration'
+import * as Int64 from 'node-int64';
 
 export enum MessageType {
     QUERY_LATEST = 0,
@@ -47,6 +50,28 @@ const initConnection = (ws: WebSocket) => {
     setTimeout(() => {
         broadcast(queryTransactionPoolMsg());
     }, 500);
+
+
+    // Get incomplete chains
+    setInterval(()=> { 
+        for( let i=0; i<config.CHAINS; i++) {
+            const hashes: BlockHash[] = get_incomplete_chain_hashes( i , Date.now() );
+            for ( let j=0; j<hashes.length; j++) {
+                broadcast(create__ask_block(i, hashes[j], 0, config.MAX_ASK_BLOCKS));
+            }
+        }     
+    }, config.ASK_FOR_INCOMPLETE_EACH_MILLISECONDS);
+
+    // Get full block s
+    setInterval(()=> { 
+        const blocks: Map<Int64, number> = get_non_full_blocks( Date.now() );
+        blocks.forEach((value: number, key: Int64) => {
+            broadcast(create__got_full_block(key, value));
+        }); 
+    }, config.ASK_FOR_FULL_BLOCKS_EACH_MILLISECONDS);
+
+    // Update commited 
+    setInterval(()=> { update_blocks_commited_time(); }, config.UPDATE_COMMITED_TIME_EACH_MILLISECONDS);
 };
 
 export const JSONToObject = <T>(data: string): T => {
