@@ -75,7 +75,7 @@ const initHttpServer = (myHttpPort) => {
         else {
             console.log("try to send new block");
             console.log(newBlock);
-            res.send(newBlock);
+            res.send(newBlock.toString());
         }
     });
     app.get('/balance', (req, res) => {
