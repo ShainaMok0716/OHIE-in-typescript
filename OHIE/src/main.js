@@ -68,16 +68,22 @@ const initHttpServer = (myHttpPort) => {
         }
     });
     app.post('/start_mine', (req, res) => {
-        console.log(req);
-        const newBlockChainID = miner_1.mine_new_block(null);
-        if (newBlockChainID === null) {
-            res.status(400).send('could not generate block');
+        console.log("Request to mine ", req.body.times);
+        let returnStr = "";
+        for (let i = 0; i < req.body.times; i++) {
+            setTimeout(function () {
+                const newBlockChainID = miner_1.mine_new_block(null);
+                if (newBlockChainID === null) {
+                    res.status(400).send('could not generate block');
+                }
+                else {
+                    returnStr += newBlockChainID.toString() + "|";
+                }
+            }, 1000 * i);
         }
-        else {
-            console.log("try to send new block");
-            console.log(newBlockChainID);
-            res.send(newBlockChainID.toString());
-        }
+        setTimeout(function () {
+            res.send(returnStr);
+        }, 1000 * req.body.times + 1);
     });
     app.get('/balance', (req, res) => {
         const balance = blockchain_1.getAccountBalance();

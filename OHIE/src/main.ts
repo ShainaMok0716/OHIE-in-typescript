@@ -18,7 +18,6 @@ import config from './Configuration'
 let httpPort: number = parseInt(process.env.HTTP_PORT) || 3001;
 let p2pPort: number = parseInt(process.env.P2P_PORT) || 6001;
 
-
 const initHttpServer = (myHttpPort: number) => {
     const app = express();
     app.use(bodyParser.json());
@@ -88,15 +87,25 @@ const initHttpServer = (myHttpPort: number) => {
     });
 
     app.post('/start_mine', (req, res) => {
-        console.log(req);
-        const newBlockChainID = mine_new_block(null);
-        if (newBlockChainID === null) {
-            res.status(400).send('could not generate block');
-        } else {
-            console.log("try to send new block");
-            console.log(newBlockChainID);
-            res.send(newBlockChainID.toString());
+     
+        console.log("Request to mine ", req.body.times);
+        let returnStr = "";
+        for (let i = 0; i < req.body.times; i++) {
+            setTimeout(function () {
+                const newBlockChainID = mine_new_block(null);
+                if (newBlockChainID === null) {
+                    res.status(400).send('could not generate block');
+                } else {
+                    returnStr += newBlockChainID.toString() + "|"
+                }
+
+            }, 1000*i);
         }
+
+        setTimeout(function () {
+            res.send(returnStr);
+        }, 1000 * req.body.times + 1);
+
     });
 
     app.get('/balance', (req, res) => {
