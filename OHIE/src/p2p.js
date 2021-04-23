@@ -1,11 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.additional_verified_transaction = exports.add_bytes_received = exports.send_block_to_peers = exports.send_block_to_one_peer = exports.write_to_one_peer = exports.write_to_all_peers = exports.get_server_folder = exports.getSockets = exports.initP2PServer = exports.broadCastTransactionPool = exports.broadcastLatest = exports.connectToPeers = exports.broadcast = exports.JSONToObject = exports.MessageType = void 0;
+exports.additional_verified_transaction = exports.add_bytes_received = exports.send_block_to_peers = exports.send_block_to_one_peer = exports.write_to_one_peer = exports.write_to_all_peers = exports.get_server_folder = exports.getSockets = exports.initP2PServer = exports.broadCastTransactionPool = exports.broadcastLatest = exports.connectToPeers = exports.broadcast = exports.JSONToObject = exports.triggerUpdateCommitInterval = exports.MessageType = void 0;
 const WebSocket = require("ws");
 const blockchain_1 = require("./blockchain");
 const transactionPool_1 = require("./transactionPool");
 const requests_1 = require("./requests");
 const p2p_processor_1 = require("./p2p_processor");
+const Configuration_1 = require("./Configuration");
 var MessageType;
 (function (MessageType) {
     MessageType[MessageType["QUERY_LATEST"] = 0] = "QUERY_LATEST";
@@ -31,6 +32,7 @@ const initP2PServer = (p2pPort) => {
 exports.initP2PServer = initP2PServer;
 const getSockets = () => sockets;
 exports.getSockets = getSockets;
+let updateCommitInterval = null;
 const initConnection = (ws) => {
     sockets.push(ws);
     initMessageHandler(ws);
@@ -40,7 +42,33 @@ const initConnection = (ws) => {
     setTimeout(() => {
         exports.broadcast(queryTransactionPoolMsg());
     }, 500);
+    // Get incomplete chains
+    setInterval(() => {
+        for (let i = 0; i < Configuration_1.default.CHAINS; i++) {
+            const hashes = blockchain_1.get_incomplete_chain_hashes(i, Date.now());
+            for (let j = 0; j < hashes.length; j++) {
+                exports.broadcast(requests_1.create__ask_block(i, hashes[j], 0, Configuration_1.default.MAX_ASK_BLOCKS));
+            }
+        }
+    }, Configuration_1.default.ASK_FOR_INCOMPLETE_EACH_MILLISECONDS);
+    // Get full block s
+    setInterval(() => {
+        const blocks = blockchain_1.get_non_full_blocks(Date.now());
+        blocks.forEach((value, key) => {
+            exports.broadcast(requests_1.create__got_full_block(key, value));
+        });
+    }, Configuration_1.default.ASK_FOR_FULL_BLOCKS_EACH_MILLISECONDS);
+    // Update commited 
+    updateCommitInterval = setInterval(() => { blockchain_1.update_blocks_commited_time(); }, Configuration_1.default.UPDATE_COMMITED_TIME_EACH_MILLISECONDS);
 };
+function triggerUpdateCommitInterval(isOn) {
+    if (isOn)
+        updateCommitInterval = setInterval(() => { blockchain_1.update_blocks_commited_time(); }, Configuration_1.default.UPDATE_COMMITED_TIME_EACH_MILLISECONDS);
+    else
+        clearInterval(updateCommitInterval);
+    return "isOn: " + isOn;
+}
+exports.triggerUpdateCommitInterval = triggerUpdateCommitInterval;
 exports.JSONToObject = (data) => {
     try {
         return JSON.parse(data);

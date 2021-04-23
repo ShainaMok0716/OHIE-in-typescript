@@ -39,6 +39,7 @@ const initP2PServer = (p2pPort: number) => {
 };
 
 const getSockets = () => sockets;
+let updateCommitInterval = null;
 
 const initConnection = (ws: WebSocket) => {
     sockets.push(ws);
@@ -71,8 +72,17 @@ const initConnection = (ws: WebSocket) => {
     }, config.ASK_FOR_FULL_BLOCKS_EACH_MILLISECONDS);
 
     // Update commited 
-    setInterval(()=> { update_blocks_commited_time(); }, config.UPDATE_COMMITED_TIME_EACH_MILLISECONDS);
+    updateCommitInterval = setInterval(()=> { update_blocks_commited_time(); }, config.UPDATE_COMMITED_TIME_EACH_MILLISECONDS);
 };
+
+export function triggerUpdateCommitInterval  (isOn: boolean) {
+    if (isOn)
+        updateCommitInterval = setInterval(() => { update_blocks_commited_time(); }, config.UPDATE_COMMITED_TIME_EACH_MILLISECONDS);
+    else
+        clearInterval(updateCommitInterval);
+
+    return "isOn: " + isOn;
+}
 
 export const JSONToObject = <T>(data: string): T => {
     try {

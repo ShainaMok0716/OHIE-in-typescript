@@ -27,6 +27,9 @@ class NetworkBlock{
 		this.time_commited = [];
 		this.time_partial = [];
 		this.proof_new_chain = [];
+		this.rank = 0;
+		this.next_rank = 1;
+		this.depth = 0;
 	}
 
 }
@@ -49,11 +52,9 @@ class Block{
 	public difficulty: number;
 	public nonce: number;
 	public chainID: number;
-	public rank: number;
-	public nextRank: number;
 
 	constructor(index: number, hash: string, previousHash: string,
-		timestamp: number, data: Transaction[], difficulty: number, nonce: number, chainID: number, rank: number, nextRank: number) {
+		timestamp: number, data: Transaction[], difficulty: number, nonce: number, chainID:number) {
 		this.index = index;
 		this.previousHash = previousHash;
 		this.timestamp = timestamp;
@@ -61,8 +62,6 @@ class Block{
 		this.hash = hash;
 		this.difficulty = difficulty;
 		this.nonce = nonce;
-		this.rank = rank;
-		this.nextRank = nextRank;
 		this.chainID = chainID;
 	}
 

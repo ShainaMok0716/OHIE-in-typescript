@@ -68,14 +68,15 @@ const initHttpServer = (myHttpPort) => {
         }
     });
     app.post('/start_mine', (req, res) => {
-        const newBlock = miner_1.mine_new_block(null);
-        if (newBlock === null) {
+        console.log(req);
+        const newBlockChainID = miner_1.mine_new_block(null);
+        if (newBlockChainID === null) {
             res.status(400).send('could not generate block');
         }
         else {
             console.log("try to send new block");
-            console.log(newBlock);
-            res.send(newBlock.toString());
+            console.log(newBlockChainID);
+            res.send(newBlockChainID.toString());
         }
     });
     app.get('/balance', (req, res) => {
@@ -129,6 +130,18 @@ const initHttpServer = (myHttpPort) => {
     });
     app.listen(myHttpPort, () => {
         console.log('Listening http on port: ' + myHttpPort);
+    });
+    app.get('/printBlocks', (req, res) => {
+        res.send(blockchain_1.print_blocks_by_BlockChainID());
+    });
+    app.get('/printIncompleteBlocks', (req, res) => {
+        res.send(blockchain_1.print_blocks_by_BlockChainID());
+    });
+    app.get('/offCommintTime', (req, res) => {
+        res.send(p2p_1.triggerUpdateCommitInterval(false));
+    });
+    app.get('/onCommintTime', (req, res) => {
+        res.send(p2p_1.triggerUpdateCommitInterval(true));
     });
 };
 function startTest() {

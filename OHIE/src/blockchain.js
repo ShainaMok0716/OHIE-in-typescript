@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.update_blocks_commited_time = exports.add_mined_block = exports.set_block_full = exports.remove_waiting_blocks = exports.get_non_full_blocks = exports.get_incomplete_chain_hashes = exports.add_block_by_parent_hash_and_chain_id = exports.still_waiting_for_full_block = exports.have_full_block = exports.get_deepest_child_by_chain_id = exports.get_incomplete_chain = exports.find_incomplete_block_by_hash_and_chain_id = exports.find_block_by_hash_and_chain_id = exports.add_received_block = exports.find_max_depth = exports.add_subtree_to_received_non_full = exports.find_number_of_incomplete_blocks = exports.add_block_to_incomplete = exports.find_incomplete_block = exports.is_in_incomplete = exports.is_incomplete_hash = exports.remove_one_chain = exports.find_number_of_nodes = exports.add_block_by_parent_hash = exports.insert_subtree_by_hash = exports.insert_one_node = exports.insert_block_only_by_hash = exports.find_block_by_hash = exports.initBlockChains = exports.test = exports.findBlock = exports.getDifficulty = exports.addBlockToChain = exports.replaceChain = exports.isValidBlockStructure = exports.getAccountBalance = exports.getMyUnspentTransactionOutputs = exports.handleReceivedTransaction = exports.sendTransaction = exports.getLatestBlock = exports.getUnspentTxOuts = exports.getBlockchain = exports.Block = exports.NetworkBlock = void 0;
+exports.print_all_incomplete_chains = exports.print_blocks_by_BlockChainID = exports.update_blocks_commited_time = exports.add_mined_block = exports.set_block_full = exports.remove_waiting_blocks = exports.get_non_full_blocks = exports.get_incomplete_chain_hashes = exports.add_block_by_parent_hash_and_chain_id = exports.still_waiting_for_full_block = exports.have_full_block = exports.get_deepest_child_by_chain_id = exports.get_incomplete_chain = exports.find_incomplete_block_by_hash_and_chain_id = exports.find_block_by_hash_and_chain_id = exports.add_received_block = exports.find_max_depth = exports.add_subtree_to_received_non_full = exports.find_number_of_incomplete_blocks = exports.add_block_to_incomplete = exports.find_incomplete_block = exports.is_in_incomplete = exports.is_incomplete_hash = exports.remove_one_chain = exports.find_number_of_nodes = exports.add_block_by_parent_hash = exports.insert_subtree_by_hash = exports.insert_one_node = exports.insert_block_only_by_hash = exports.find_block_by_hash = exports.initBlockChains = exports.test = exports.findBlock = exports.getDifficulty = exports.addBlockToChain = exports.replaceChain = exports.isValidBlockStructure = exports.getAccountBalance = exports.getMyUnspentTransactionOutputs = exports.handleReceivedTransaction = exports.sendTransaction = exports.getLatestBlock = exports.getUnspentTxOuts = exports.getBlockchain = exports.Block = exports.NetworkBlock = void 0;
 const CryptoJS = require("crypto-js");
 const _ = require("lodash");
 const p2p_1 = require("./p2p");
@@ -86,8 +86,6 @@ const initBlockChains = () => {
         newBlock.is_full_block = false;
         newBlock.nb = new block_1.NetworkBlock();
         newBlock.nb.depth = 0;
-        newBlock.rank = 0;
-        newBlock.nextRank = 0;
         newBlock.nb.time_mined = 0;
         newBlock.nb.time_received = 0;
         newBlock.chainID = i;
@@ -129,7 +127,7 @@ function bootstrap_chain(initial_hash) {
             }],
         'id': 'e655f6a5f26dc9b4cac6e46f52336428287759cf81ef5ff10854f69d68f43fa3'
     };
-    let b = new block_1.Block(0, "", "", 0, [genesisTransaction], 0, 0, 0, 0, 0);
+    let b = new block_1.Block(0, "", "", 0, [genesisTransaction], 0, 0, 0);
     b.is_full_block = false;
     b.hash = initial_hash;
     b.left = undefined;
@@ -151,10 +149,8 @@ function find_block_by_hash(b, hash) {
 }
 exports.find_block_by_hash = find_block_by_hash;
 function insert_block_only_by_hash(r, hash, newnode) {
-    console.log("insert_block_only_by_hash");
-    console.log(r, hash);
     if (undefined == r) {
-        let t = new block_1.Block(0, "", "", 0, [], 0, 0, 0, 0, 0);
+        let t = new block_1.Block(0, "", "", 0, [], 0, 0, 0);
         t.hash = hash;
         t.is_full_block = false;
         t.left = t.right = t.child = t.sibling = t.parent = undefined;
@@ -221,6 +217,7 @@ function add_block_by_parent_hash(root, parent, hash) {
         return { root, added: false };
     }
     // Insert the new node (of the child)
+    console.log("insert_block_only_by_hash: ", hash);
     let result = insert_block_only_by_hash(root, hash, undefined);
     root = result[0];
     let newnode = result[1];
@@ -240,6 +237,7 @@ function add_block_by_parent_hash(root, parent, hash) {
             z = z.sibling;
         z.sibling = newnode;
     }
+    console.log("Add Block success");
     return { root, added: true };
 }
 exports.add_block_by_parent_hash = add_block_by_parent_hash;
@@ -388,12 +386,22 @@ function find_number_of_incomplete_blocks(l) {
 }
 exports.find_number_of_incomplete_blocks = find_number_of_incomplete_blocks;
 //print fuinction
+function print_blocks_by_BlockChainID() {
+    for (let i = 0; i < blockchains.length; i++) {
+        console.log("Chain ID: " + i);
+        print_blocks(blockchains[i]);
+        console.log(" \n");
+    }
+}
+exports.print_blocks_by_BlockChainID = print_blocks_by_BlockChainID;
 function print_blocks(root) {
     if (undefined == root)
         return;
-    print_blocks(root.left);
-    console.log("%8lx : %4d : %8lx : %d %d %d %d %d :  %d \n", root.hash, root.nb.depth, (root.parent == undefined) ? 0 : root.parent.hash, root.left != undefined, root.right != undefined, root.child != undefined, root.parent != undefined, root.sibling != undefined, root.nb.depth);
-    print_blocks(root.right);
+    //print_blocks(root.left);
+    //console.log(" Hash:", root.hash, "Depth:", root.nb.depth, "Rank:", root.nb.rank, " NextRank:", root.nb.next_rank);
+    //print_blocks(root.right);
+    print_blocks(root.child);
+    console.log(" Hash:", root.hash, "Depth:", root.nb.depth, "Rank:", root.nb.rank, " NextRank:", root.nb.next_rank, " | time_partial:", root.nb.time_partial, " | time_commited:", root.nb.time_commited);
 }
 function print_full_tree(root) {
     if (undefined == root)
@@ -412,11 +420,13 @@ function print_full_tree(root) {
     }
 }
 function print_all_incomplete_chains(l) {
+    console.log("print_all_incomplete_chains", l);
     if (undefined == l)
         return;
     print_full_tree(l.b);
     print_all_incomplete_chains(l.next);
 }
+exports.print_all_incomplete_chains = print_all_incomplete_chains;
 function print_hash_tree(root) {
     if (undefined == root)
         return;
@@ -430,6 +440,7 @@ function print_hash_tree(root) {
  * Return true if the parent hash is not in any of the main/incomplete chains
  */
 const add_received_block = (chain_id, parent, hash, nb) => {
+    console.log("add_received_block: chain_id:", chain_id);
     let added = false;
     let isIncomplete = false;
     // If block is already in the chain, then do nothing
@@ -535,7 +546,6 @@ function have_full_block(chain_id, hash) {
 }
 exports.have_full_block = have_full_block;
 function find_block_by_hash_and_chain_id(hash, chain_id) {
-    console.log("find_block_by_hash_and_chain_id: ", hash, chain_id);
     return find_block_by_hash(blockchains[chain_id], hash);
 }
 exports.find_block_by_hash_and_chain_id = find_block_by_hash_and_chain_id;
@@ -568,7 +578,7 @@ function add_block_by_parent_hash_and_chain_id(parent_hash, new_block, chain_id,
     let bz = find_block_by_hash(blockchains[chain_id], new_block);
     if (undefined != bz) {
         deepest[chain_id] = bz;
-        bz.nb = new block_1.NetworkBlock();
+        bz.nb = nb;
     }
 }
 exports.add_block_by_parent_hash_and_chain_id = add_block_by_parent_hash_and_chain_id;
@@ -702,8 +712,9 @@ function update_blocks_commited_time() {
             // Discard the last 
             let t = deepest[i];
             let count = 0;
-            while (undefined != t && count++ < Configuration_1.default.T_DISCARD[j])
+            while (undefined != t && count++ < Configuration_1.default.T_DISCARD[j]) {
                 t = t.parent;
+            }
             if (undefined == t) {
                 stop_this_j = true;
                 break;
@@ -714,15 +725,19 @@ function update_blocks_commited_time() {
                 break;
                 //return;
             }
+            // console.log("Get Chain " + i + " Deepest Block", t, " Depth:", t.nb.depth);
             if (stop_this_j)
                 break;
-            if (t.nb.next_rank < confirm_bar)
+            if (confirm_bar == -1)
+                confirm_bar = t.nb.next_rank;
+            else if (t.nb.next_rank < confirm_bar)
                 confirm_bar = t.nb.next_rank;
         }
         if (stop_this_j)
             continue;
         if (confirm_bar < 0)
             continue;
+        console.log("Set confirm_bar: ", confirm_bar);
         // Update commited times
         for (let i = 0; i < Configuration_1.default.CHAINS; i++) {
             // Discard the last 
@@ -760,7 +775,7 @@ const findBlock = (index, previousHash, timestamp, data, difficulty) => {
     while (true) {
         const hash = calculateHash(index, previousHash, timestamp, data, difficulty, nonce);
         if (hashMatchesDifficulty(hash, difficulty)) {
-            return new block_1.Block(index, hash, previousHash, timestamp, data, difficulty, nonce, chainID, rank, nextRank);
+            return new block_1.Block(index, hash, previousHash, timestamp, data, difficulty, nonce, chainID);
         }
         nonce++;
     }

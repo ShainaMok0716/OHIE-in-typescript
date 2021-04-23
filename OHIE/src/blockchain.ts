@@ -97,8 +97,6 @@ const initBlockChains = () => {
         newBlock.is_full_block = false;
         newBlock.nb = new NetworkBlock();
         newBlock.nb.depth = 0;
-        newBlock.rank = 0;
-        newBlock.nextRank = 0;
         newBlock.nb.time_mined = 0;
         newBlock.nb.time_received = 0;
         newBlock.chainID = i;
@@ -149,7 +147,7 @@ function  bootstrap_chain  (initial_hash: Int64): Block
         'id': 'e655f6a5f26dc9b4cac6e46f52336428287759cf81ef5ff10854f69d68f43fa3'
     };
 
-    let b: Block = new Block(0, "", "", 0, [genesisTransaction], 0, 0, 0, 0, 0);
+    let b: Block = new Block(0, "", "", 0, [genesisTransaction], 0, 0, 0);
     b.is_full_block = false;
     b.hash = initial_hash;
     b.left = undefined;
@@ -175,10 +173,8 @@ function find_block_by_hash (b:Block, hash: Int64): Block
 
 function insert_block_only_by_hash(r: Block, hash: Int64, newnode: Block)
 {
-    console.log("insert_block_only_by_hash");
-    console.log(r,hash);
     if (undefined == r) {
-        let t: Block = new Block(0, "", "", 0, [], 0, 0, 0, 0, 0);
+        let t: Block = new Block(0, "", "", 0, [], 0, 0, 0,);
         t.hash = hash;
         t.is_full_block = false;
         t.left = t.right = t.child = t.sibling = t.parent = undefined;
@@ -250,6 +246,7 @@ function add_block_by_parent_hash(root: Block, parent: Int64, hash: Int64): { ro
         return { root, added:false};
     }
     // Insert the new node (of the child)
+    console.log("insert_block_only_by_hash: ", hash);
     let result = insert_block_only_by_hash(root, hash, undefined);
     root = result[0];
     let newnode: Block = result[1];
@@ -270,7 +267,7 @@ function add_block_by_parent_hash(root: Block, parent: Int64, hash: Int64): { ro
         while (z .sibling != undefined) z = z .sibling;
         z.sibling = newnode;
     }
-
+    console.log("Add Block success");
     return { root, added: true };
 }
 
@@ -444,14 +441,25 @@ function find_number_of_incomplete_blocks(l: IncompleteBlock): number
 
 //print fuinction
 
+function print_blocks_by_BlockChainID() {
+    for (let i = 0; i < blockchains.length; i++) {
+        console.log("Chain ID: " + i);
+        print_blocks(blockchains[i]);
+        console.log(" \n");
+    }
+}
+
 function  print_blocks( root:Block)
 {
     if (undefined == root) return;
 
-    print_blocks(root.left);
-    console.log("%8lx : %4d : %8lx : %d %d %d %d %d :  %d \n", root.hash, root.nb.depth, (root.parent == undefined) ? 0 : root.parent.hash,
-        root.left != undefined, root.right != undefined, root.child != undefined, root.parent != undefined, root.sibling != undefined, root.nb.depth);
-    print_blocks(root .right);
+
+    //print_blocks(root.left);
+    //console.log(" Hash:", root.hash, "Depth:", root.nb.depth, "Rank:", root.nb.rank, " NextRank:", root.nb.next_rank);
+    //print_blocks(root.right);
+
+    print_blocks(root.child);
+    console.log(" Hash:", root.hash, "Depth:", root.nb.depth, "Rank:", root.nb.rank, " NextRank:", root.nb.next_rank, " | time_partial:", root.nb.time_partial,  " | time_commited:", root.nb.time_commited);
 }
 
 function  print_full_tree( root:Block)
@@ -475,6 +483,7 @@ function  print_full_tree( root:Block)
 }
 
 function print_all_incomplete_chains(l: IncompleteBlock) {
+    console.log("print_all_incomplete_chains",l);
     if (undefined == l) return;
 
     print_full_tree(l.b);
@@ -498,7 +507,7 @@ function print_hash_tree(root: Block) {
  */
 const add_received_block = (chain_id: number, parent: Int64, hash: Int64, nb: NetworkBlock): { added: boolean, isIncomplete: boolean } => 
 {
-
+    console.log("add_received_block: chain_id:", chain_id);
     let added = false;
     let isIncomplete = false
 
@@ -641,7 +650,6 @@ function have_full_block(chain_id: number, hash: Int64): boolean
 
 function find_block_by_hash_and_chain_id(hash: Int64,  chain_id: number):Block
 {
-    console.log("find_block_by_hash_and_chain_id: ", hash, chain_id);
     return find_block_by_hash(blockchains[chain_id], hash);
 
 }
@@ -682,12 +690,13 @@ function still_waiting_for_full_block(hash: Int64, time_of_now: number): boolean
 function add_block_by_parent_hash_and_chain_id(parent_hash: Int64, new_block: Int64, chain_id: number, nb: NetworkBlock)  
 {
     console.log("add_block_by_parent_hash_and_chain_id:", parent_hash, new_block, chain_id);
+
     add_block_by_parent_hash(blockchains[chain_id], parent_hash, new_block);
 
     let bz: Block = find_block_by_hash(blockchains[chain_id], new_block);
     if (undefined != bz) {
         deepest[chain_id] = bz;
-        bz.nb = new NetworkBlock();
+        bz.nb = nb;
     }
 
 }
@@ -812,7 +821,6 @@ const my_ip = "";
 const my_port = "";
 
 function update_blocks_commited_time() {
-
     let time_of_now: number = Date.now()
 
 
@@ -864,9 +872,11 @@ function update_blocks_commited_time() {
 
             // Discard the last 
             let t: Block = deepest[i];
+
             let count = 0;
-            while (undefined != t && count++ < config.T_DISCARD[j])
+            while (undefined != t && count++ < config.T_DISCARD[j]) {
                 t = t.parent;
+            }
             if (undefined == t) {
                 stop_this_j = true;
                 break;
@@ -878,17 +888,20 @@ function update_blocks_commited_time() {
                 break;
                 //return;
             }
+           // console.log("Get Chain " + i + " Deepest Block", t, " Depth:", t.nb.depth);
 
             if (stop_this_j) break;
 
-            if (t.nb.next_rank < confirm_bar) confirm_bar = t.nb.next_rank;
+            if (confirm_bar == -1)
+                confirm_bar = t.nb.next_rank;
+            else if (t.nb.next_rank < confirm_bar) confirm_bar = t.nb.next_rank;
         }
+  
 
         if (stop_this_j) continue;
-
-
         if (confirm_bar < 0) continue;
 
+        console.log("Set confirm_bar: ", confirm_bar);
 
         // Update commited times
         for (let i = 0; i < config.CHAINS; i++) {
@@ -933,7 +946,7 @@ const findBlock = (index: number, previousHash: string, timestamp: number, data:
     while (true) {
         const hash: string = calculateHash(index, previousHash, timestamp, data, difficulty, nonce);
         if (hashMatchesDifficulty(hash, difficulty)) {
-            return new Block(index, hash, previousHash, timestamp, data, difficulty, nonce, chainID,rank, nextRank);
+            return new Block(index, hash, previousHash, timestamp, data, difficulty, nonce, chainID);
         }
         nonce++;
     }
@@ -1112,6 +1125,6 @@ export {
     find_number_of_nodes, remove_one_chain, is_incomplete_hash, is_in_incomplete, find_incomplete_block, add_block_to_incomplete, find_number_of_incomplete_blocks,
     add_subtree_to_received_non_full, find_max_depth, add_received_block, 
     find_block_by_hash_and_chain_id, find_incomplete_block_by_hash_and_chain_id, get_incomplete_chain, get_deepest_child_by_chain_id, have_full_block, still_waiting_for_full_block, add_block_by_parent_hash_and_chain_id,
-    get_incomplete_chain_hashes, get_non_full_blocks, remove_waiting_blocks, set_block_full, add_mined_block, update_blocks_commited_time
+    get_incomplete_chain_hashes, get_non_full_blocks, remove_waiting_blocks, set_block_full, add_mined_block, update_blocks_commited_time, print_blocks_by_BlockChainID, print_all_incomplete_chains
 
 };

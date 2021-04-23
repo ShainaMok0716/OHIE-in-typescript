@@ -3,16 +3,17 @@ import * as express from 'express';
 import * as _ from 'lodash';
 import {
     Block, getAccountBalance,
-    getBlockchain, getMyUnspentTransactionOutputs, getUnspentTxOuts, sendTransaction, test, initBlockChains
+    getBlockchain, getMyUnspentTransactionOutputs, getUnspentTxOuts, sendTransaction, test, initBlockChains, print_blocks_by_BlockChainID
 } from './blockchain';
 import {
     generateNextBlock, generatenextBlockWithTransaction, generateRawNextBlock, mine_new_block
 } from './miner';
-import {connectToPeers, getSockets, initP2PServer} from './p2p';
+import { connectToPeers, getSockets, initP2PServer, triggerUpdateCommitInterval} from './p2p';
 import {UnspentTxOut} from './transaction';
 import {getTransactionPool} from './transactionPool';
 import {getPublicFromWallet, initWallet} from './wallet';
 import { log } from 'util';
+import config from './Configuration'
 
 let httpPort: number = parseInt(process.env.HTTP_PORT) || 3001;
 let p2pPort: number = parseInt(process.env.P2P_PORT) || 6001;
@@ -87,13 +88,14 @@ const initHttpServer = (myHttpPort: number) => {
     });
 
     app.post('/start_mine', (req, res) => {
-        const newBlock = mine_new_block(null);
-        if (newBlock === null) {
+        console.log(req);
+        const newBlockChainID = mine_new_block(null);
+        if (newBlockChainID === null) {
             res.status(400).send('could not generate block');
         } else {
             console.log("try to send new block");
-            console.log(newBlock);
-            res.send(newBlock.toString());
+            console.log(newBlockChainID);
+            res.send(newBlockChainID.toString());
         }
     });
 
@@ -154,6 +156,22 @@ const initHttpServer = (myHttpPort: number) => {
 
     app.listen(myHttpPort, () => {
         console.log('Listening http on port: ' + myHttpPort);
+    });
+
+    app.get('/printBlocks', (req, res) => {
+        res.send(print_blocks_by_BlockChainID());
+    });
+
+    app.get('/printIncompleteBlocks', (req, res) => {
+        res.send(print_blocks_by_BlockChainID());
+    });
+
+    app.get('/offCommintTime', (req, res) => {
+        res.send(triggerUpdateCommitInterval(false));
+    });
+
+    app.get('/onCommintTime', (req, res) => {
+        res.send(triggerUpdateCommitInterval(true));
     });
 };
 

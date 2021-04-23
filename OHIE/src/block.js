@@ -6,11 +6,14 @@ class NetworkBlock {
         this.time_commited = [];
         this.time_partial = [];
         this.proof_new_chain = [];
+        this.rank = 0;
+        this.next_rank = 1;
+        this.depth = 0;
     }
 }
 exports.NetworkBlock = NetworkBlock;
 class Block {
-    constructor(index, hash, previousHash, timestamp, data, difficulty, nonce, chainID, rank, nextRank) {
+    constructor(index, hash, previousHash, timestamp, data, difficulty, nonce, chainID) {
         this.index = index;
         this.previousHash = previousHash;
         this.timestamp = timestamp;
@@ -18,8 +21,6 @@ class Block {
         this.hash = hash;
         this.difficulty = difficulty;
         this.nonce = nonce;
-        this.rank = rank;
-        this.nextRank = nextRank;
         this.chainID = chainID;
     }
 }

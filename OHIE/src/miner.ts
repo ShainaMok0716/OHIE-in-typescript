@@ -95,7 +95,7 @@ export function mine_new_block(bc: Block[]) : Int64
 			console.log("Something is wrong in mine_new_block: get_deepest return block with NULL nb pointer");
 			return;
 		}
-		if ( b.nextRank > trailing_block.nextRank ){
+		if (b.nb.next_rank > trailing_block.nb.next_rank) {
 			trailing_block = b;
 			trailing_id = i;
 		}
@@ -134,6 +134,7 @@ export function mine_new_block(bc: Block[]) : Int64
 	// Last block of the chain where new block will be mined
 	let parent: Block = get_deepest_child_by_chain_id( chain_id );
 
+	console.log("Get parent block:", parent.hash, "| chainid:", parent.chainID);
 	let nb: NetworkBlock = new NetworkBlock();
 	nb.chain_id = chain_id;
 	nb.parent = parent.hash;
@@ -144,8 +145,8 @@ export function mine_new_block(bc: Block[]) : Int64
 	nb.merkle_root_txs = merkle_root_txs;
 	nb.proof_new_chain = proof_new_chain;
 	nb.no_txs = no_txs;
-	nb.rank = parent.nextRank ;
-	nb.next_rank = trailing_block.nextRank;
+	nb.rank = parent.nb.next_rank;
+	nb.next_rank = trailing_block.nb.next_rank;
 	if (nb.next_rank <= nb.rank ) 
 		nb.next_rank = nb.rank + 1;
 
@@ -165,15 +166,18 @@ export function mine_new_block(bc: Block[]) : Int64
 	add_block_by_parent_hash_and_chain_id( parent.hash, new_block, chain_id, nb );
 	if( config.PRINT_MINING_MESSAGES) {
 		//printf("\033[33;1m[+] Mined block on chain[%d] : [%lx %lx]\n\033[0m", chain_id, parent->hash, new_block);
-		console.log("033[33;1m[+] Mined block on chain[%d] : [%lx %lx]\n033[0m", chain_id, parent.hash, new_block);
+		console.log("Mined block on chain", chain_id);
 	}
 
 	// Set block flag as full block
 	let bz: Block = find_block_by_hash_and_chain_id(new_block, chain_id);
-	console.log("Find new block result:", bz);
-	if (null != bz && null != bz.nb ){
+	if (null != bz && null != bz.nb) {
+		console.log("Find new block by hash :", bz.hash, "result: success");
 		bz.is_full_block = true;
 	}
+	else {
+		console.log("Find new block by hash :", bz.hash, "result: fail");
+}
 
 	// Increase the miner counter
 	add_mined_block();

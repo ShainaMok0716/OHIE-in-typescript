@@ -71,7 +71,7 @@ function mine_new_block(bc) {
             console.log("Something is wrong in mine_new_block: get_deepest return block with NULL nb pointer");
             return;
         }
-        if (b.nextRank > trailing_block.nextRank) {
+        if (b.nb.next_rank > trailing_block.nb.next_rank) {
             trailing_block = b;
             trailing_id = i;
         }
@@ -101,6 +101,7 @@ function mine_new_block(bc) {
     let proof_new_chain = verify_1.compute_merkle_proof(leaves, chain_id);
     // Last block of the chain where new block will be mined
     let parent = blockchain_1.get_deepest_child_by_chain_id(chain_id);
+    console.log("Get parent block:", parent.hash, "| chainid:", parent.chainID);
     let nb = new blockchain_1.NetworkBlock();
     nb.chain_id = chain_id;
     nb.parent = parent.hash;
@@ -111,8 +112,8 @@ function mine_new_block(bc) {
     nb.merkle_root_txs = merkle_root_txs;
     nb.proof_new_chain = proof_new_chain;
     nb.no_txs = no_txs;
-    nb.rank = parent.nextRank;
-    nb.next_rank = trailing_block.nextRank;
+    nb.rank = parent.nb.next_rank;
+    nb.next_rank = trailing_block.nb.next_rank;
     if (nb.next_rank <= nb.rank)
         nb.next_rank = nb.rank + 1;
     nb.depth = parent.nb.depth + 1;
@@ -130,13 +131,16 @@ function mine_new_block(bc) {
     blockchain_1.add_block_by_parent_hash_and_chain_id(parent.hash, new_block, chain_id, nb);
     if (Configuration_1.default.PRINT_MINING_MESSAGES) {
         //printf("\033[33;1m[+] Mined block on chain[%d] : [%lx %lx]\n\033[0m", chain_id, parent->hash, new_block);
-        console.log("033[33;1m[+] Mined block on chain[%d] : [%lx %lx]\n033[0m", chain_id, parent.hash, new_block);
+        console.log("Mined block on chain", chain_id);
     }
     // Set block flag as full block
     let bz = blockchain_1.find_block_by_hash_and_chain_id(new_block, chain_id);
-    console.log("Find new block result:", bz);
     if (null != bz && null != bz.nb) {
+        console.log("Find new block by hash :", bz.hash, "result: success");
         bz.is_full_block = true;
+    }
+    else {
+        console.log("Find new block by hash :", bz.hash, "result: fail");
     }
     // Increase the miner counter
     blockchain_1.add_mined_block();
