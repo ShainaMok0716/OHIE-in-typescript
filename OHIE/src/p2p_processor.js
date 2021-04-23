@@ -26,6 +26,7 @@ function process_buffer(ws, message) {
             handle_ask_full_block(ws, message.data);
             break;
         case p2p_1.MessageType.full_block:
+            handle_full_block(ws, message.data);
             break;
     }
 }

@@ -32,6 +32,7 @@ export function process_buffer(ws, message){
             handle_ask_full_block(ws, message.data);
         break;
         case MessageType.full_block:
+            handle_full_block(ws, message.data);
         break;
     }
 }

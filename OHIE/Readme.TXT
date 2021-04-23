@@ -1,3 +1,7 @@
+/////////////////////////////////////
+Run in Windows10 cmd
+////////////////////////////////////
+
 Server side:
 npm start
 
@@ -26,5 +30,5 @@ curl -H "Content-type:application/json" --data "{\"peer\" : \"ws://localhost:600
 
 //Start Mine, would get return chainids for newblocks
 //times means mine times
-curl -H "Content-type:application/json" --data "{\"times\" : 10}" http://localhost:3001/start_mine
+curl -H "Content-type:application/json" --data "{\"times\" : 100}" http://localhost:3001/start_mine
 

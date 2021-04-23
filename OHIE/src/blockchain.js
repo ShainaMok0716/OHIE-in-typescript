@@ -672,8 +672,10 @@ const BLOCKS_STORE_FREQUENCY = 0;
 const FOLDER_BLOCKS = "";
 const my_ip = "";
 const my_port = "";
+let last_confirmbar = -1;
 function update_blocks_commited_time() {
     let time_of_now = Date.now();
+    console.log("update_blocks_commited_time", time_of_now);
     for (let j = 0; j < Configuration_1.default.NO_T_DISCARDS; j++) {
         /*
          * Update partial times
@@ -725,7 +727,6 @@ function update_blocks_commited_time() {
                 break;
                 //return;
             }
-            // console.log("Get Chain " + i + " Deepest Block", t, " Depth:", t.nb.depth);
             if (stop_this_j)
                 break;
             if (confirm_bar == -1)
@@ -733,11 +734,25 @@ function update_blocks_commited_time() {
             else if (t.nb.next_rank < confirm_bar)
                 confirm_bar = t.nb.next_rank;
         }
+        console.log("Get Min confirm_bar: ", confirm_bar, "|stop_this_j: ", stop_this_j, "| last_confirmbar: ", last_confirmbar);
         if (stop_this_j)
-            continue;
+            return;
         if (confirm_bar < 0)
-            continue;
-        console.log("Set confirm_bar: ", confirm_bar);
+            return;
+        if (confirm_bar > last_confirmbar) {
+            console.log("Get Min confirm_bar: ", confirm_bar);
+            if (last_confirmbar == -1) {
+                if (confirm_bar > 2)
+                    confirm_bar = 2;
+                last_confirmbar = confirm_bar;
+            }
+            else {
+                if (confirm_bar - last_confirmbar > 2)
+                    confirm_bar = last_confirmbar + 2;
+                last_confirmbar = confirm_bar;
+            }
+            console.log("Set confirm_bar: ", confirm_bar, "Avoid more than 2");
+        }
         // Update commited times
         for (let i = 0; i < Configuration_1.default.CHAINS; i++) {
             // Discard the last 

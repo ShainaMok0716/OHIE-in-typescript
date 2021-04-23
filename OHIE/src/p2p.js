@@ -86,7 +86,7 @@ const initMessageHandler = (ws) => {
                 console.log('could not parse received JSON message: ' + data);
                 return;
             }
-            console.log('Received message: %s', JSON.stringify(message));
+            //  console.log('Received message: %s', JSON.stringify(message));
             switch (message.type) {
                 case MessageType.QUERY_LATEST:
                     write(ws, responseLatestMsg());
