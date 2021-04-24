@@ -567,6 +567,7 @@ const add_received_block = (chain_id: number, parent: Int64, hash: Int64, nb: Ne
         let bz: Block = find_block_by_hash(blockchains[chain_id], hash);
         if (undefined != bz) {
             bz.nb = new NetworkBlock();
+            bz.nb.chain_id = chain_id;
             added = true;
 
             //  Update deepest

@@ -481,6 +481,7 @@ const add_received_block = (chain_id, parent, hash, nb) => {
         let bz = find_block_by_hash(blockchains[chain_id], hash);
         if (undefined != bz) {
             bz.nb = new block_1.NetworkBlock();
+            bz.nb.chain_id = chain_id;
             added = true;
             //  Update deepest
             let old_depth = deepest[chain_id].nb.depth;
