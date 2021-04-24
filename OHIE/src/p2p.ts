@@ -102,7 +102,7 @@ const initMessageHandler = (ws: WebSocket) => {
                 console.log('could not parse received JSON message: ' + data);
                 return;
             }
-          //  console.log('Received message: %s', JSON.stringify(message));
+            console.log('Received message: %s', JSON.stringify(message));
             switch (message.type) {
                 case MessageType.QUERY_LATEST:
                     write(ws, responseLatestMsg());
@@ -144,7 +144,7 @@ const initMessageHandler = (ws: WebSocket) => {
                 case MessageType.have_full_block:
                 case MessageType.ask_full_block:
                 case MessageType.full_block:
-                    process_buffer(ws, message.data);
+                    process_buffer(ws, message);
                     break;
             }
         } catch (e) {

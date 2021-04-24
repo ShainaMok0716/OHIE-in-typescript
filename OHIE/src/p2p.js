@@ -86,7 +86,7 @@ const initMessageHandler = (ws) => {
                 console.log('could not parse received JSON message: ' + data);
                 return;
             }
-            //  console.log('Received message: %s', JSON.stringify(message));
+            console.log('Received message: %s', JSON.stringify(message));
             switch (message.type) {
                 case MessageType.QUERY_LATEST:
                     write(ws, responseLatestMsg());
@@ -129,7 +129,7 @@ const initMessageHandler = (ws) => {
                 case MessageType.have_full_block:
                 case MessageType.ask_full_block:
                 case MessageType.full_block:
-                    p2p_processor_1.process_buffer(ws, message.data);
+                    p2p_processor_1.process_buffer(ws, message);
                     break;
             }
         }

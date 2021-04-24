@@ -9,6 +9,7 @@ const requests_1 = require("./requests");
 const Configuration_1 = require("./Configuration");
 const verify_1 = require("./verify");
 function process_buffer(ws, message) {
+    console.log("process_buffer", message);
     switch (message.type) {
         case p2p_1.MessageType.ask_block:
             handle_ask_block(ws, message.data);
@@ -32,6 +33,7 @@ function process_buffer(ws, message) {
 }
 exports.process_buffer = process_buffer;
 function handle_ask_block(ws, data) {
+    data = p2p_1.JSONToObject(data);
     // First check if it is in the main chain
     let b = blockchain_1.find_block_by_hash_and_chain_id(data.hash, data.chain_id);
     // If not, check in the incomplete chains
@@ -48,8 +50,9 @@ function handle_ask_block(ws, data) {
 exports.handle_ask_block = handle_ask_block;
 function handle_process_block(ws, data) {
     let nb = p2p_1.JSONToObject(data);
+    console.log("handle_process_block", nb);
     // Add the block to the blockchain
-    let added, need_parent = blockchain_1.add_received_block(data.chain_id, data.parent, data.hash, nb);
+    let added, need_parent = blockchain_1.add_received_block(nb.chain_id, nb.parent, nb.hash, nb);
     if (added) {
         p2p_1.send_block_to_peers(nb);
     }

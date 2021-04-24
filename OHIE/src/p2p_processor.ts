@@ -13,8 +13,10 @@ import {MessageType, JSONToObject,send_block_to_one_peer, write_to_all_peers, wr
 import {create__ask_block, create__have_full_block, create__ask_full_block, create__full_block} from './requests';
 import config from './Configuration'
 import {get_chain_id_from_hash, string_to_blockhash, verify_merkle_proof} from './verify';
+import { log } from 'util';
 
-export function process_buffer(ws, message){
+export function process_buffer(ws, message) {
+    console.log("process_buffer", message);
     switch (message.type) {
         case MessageType.ask_block:
             handle_ask_block(ws, message.data);
@@ -37,7 +39,9 @@ export function process_buffer(ws, message){
     }
 }
 
-export function handle_ask_block(ws, data){
+export function handle_ask_block(ws, data) {
+
+    data = JSONToObject(data);
     // First check if it is in the main chain
     let b = find_block_by_hash_and_chain_id(data.hash, data.chain_id);
 
@@ -56,10 +60,11 @@ export function handle_ask_block(ws, data){
 
 export function handle_process_block(ws, data){
 
-    let nb = JSONToObject<NetworkBlock>(data);
+    let nb: NetworkBlock = JSONToObject<NetworkBlock>(data);
+    console.log("handle_process_block", nb);
 
     // Add the block to the blockchain
-    let added, need_parent = add_received_block(data.chain_id, data.parent, data.hash, nb);
+    let added, need_parent = add_received_block(nb.chain_id, nb.parent, nb.hash, nb);
     if(added) {
         send_block_to_peers(nb);
     }
@@ -73,14 +78,18 @@ export function handle_process_block(ws, data){
     }
 };
 
-function handle_got_full_block(ws, data){
+function handle_got_full_block(ws, data) {
+    data = JSONToObject(data);
+
     // Check if this node has the full block, and if so send to the asking peer
     if(have_full_block(data.chain_id, data.hash)){
         write_to_one_peer(ws, create__have_full_block(data.chain_id, data.hash));
     }
 }
 
-function handle_have_full_block(ws, data){
+function handle_have_full_block(ws, data) {
+    data = JSONToObject(data);
+
     // Make sure you still DON't have the full block
     if ( have_full_block( data.chain_id, data.hash) == false) return;
 
@@ -91,7 +100,9 @@ function handle_have_full_block(ws, data){
     }
 }
 
-function handle_ask_full_block(ws, data){
+function handle_ask_full_block(ws, data) {
+    data = JSONToObject(data);
+
     // Make sure you have the block 
     if(have_full_block(data.chain_id, data.hash)) return;
 
@@ -117,7 +128,9 @@ function handle_ask_full_block(ws, data){
     } 
 }
 
-function handle_full_block(ws: WebSocket, data){
+function handle_full_block(ws: WebSocket, data) {
+    data = JSONToObject(data);
+
     // Make sure the block does not exist
     if(!have_full_block(data.chain_id, data.hash) ){
         return;
