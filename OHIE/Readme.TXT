@@ -26,7 +26,7 @@ curl http://localhost:3001/printBlocks
 
 //Add peer between 3001, 6001
 // After peer success, update_blocks_commited_time would be start loop interval
-curl -H "Content-type:application/json" --data "{\"peer\" : \"ws://localhost:6001\"}" http://localhost:3001/addPeer
+curl -H "Content-type:application/json" --data "{\"peer\" : \"ws://localhost:6002\"}" http://localhost:3001/addPeer
 
 //Start Mine, would get return chainids for newblocks
 //times means mine times
