@@ -33,5 +33,5 @@ curl -H "Content-type:application/json" --data "{\"peer\" : \"ws://localhost:600
 curl -H "Content-type:application/json" --data "{\"times\" : 100}" http://localhost:3001/start_mine
 
 //Print block by hash (XXXXXX is target block's hash)
-curl -H "Content-type:application/json" --data "{\"hash\" : XXXXXXX}" http://localhost:3001/print_block_by_hash
+curl -H "Content-type:application/json" --data "{\"hash\" : 11471957295179911000}" http://localhost:3001/print_block_by_hash
 

@@ -82,6 +82,7 @@ const initMessageHandler = (ws) => {
     ws.on('message', (data) => {
         try {
             const message = exports.JSONToObject(data);
+            console.log("message.type:" + message.type);
             if (message === null) {
                 console.log('could not parse received JSON message: ' + data);
                 return;

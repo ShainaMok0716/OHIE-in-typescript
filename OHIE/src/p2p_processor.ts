@@ -184,7 +184,7 @@ function handle_full_block(ws: WebSocket, data) {
           }
 
           // Verify blockhash is correct
-          if ( string_to_blockhash( h ) != n.hash ){
+          if ( h != n.hash ){
               console.log("033[31;1mBlockhash is incorrect 033[0m\n");
           }
 

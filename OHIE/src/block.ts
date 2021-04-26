@@ -7,9 +7,9 @@ import * as Int64 from 'node-int64';
 class NetworkBlock{
 
 	public chain_id:number;
-	public parent:number;
-	public hash: Int64;
-	public trailing: Int64;
+	public parent:string;
+	public hash: string;
+	public trailing:string;
 	public trailing_id: number;
 	public merkle_root_chains: string;
 	public merkle_root_txs: string;
@@ -36,7 +36,7 @@ class NetworkBlock{
 
 class Block{
 
-	public hash: Int64;
+	public hash: string;
 	public nb: NetworkBlock;
 	public is_full_block: boolean;
 	public left: Block;

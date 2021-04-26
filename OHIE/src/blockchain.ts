@@ -12,7 +12,7 @@ import { NetworkBlock, Block, IncompleteBlock } from './block';
 import config from './Configuration';
 
 
-type BlockHash = Int64;
+type BlockHash = string;
 
 // 4 chains
 let blockchains: Block[];
@@ -72,8 +72,8 @@ const getMyUnspentTransactionOutputs = () => {
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 
-let received_non_full_blocks: Map<Int64, number>;
-let waiting_for_full_blocks: Map<Int64, number>;
+let received_non_full_blocks: Map<string, number>;
+let waiting_for_full_blocks: Map<string, number>;
 let processed_full_blocks = 0;
 let total_received_blocks = 0;
 let mined_blocks = 0;
@@ -136,7 +136,7 @@ const initBlockChains = () => {
 }
 
 
-function  bootstrap_chain  (initial_hash: Int64): Block
+function  bootstrap_chain  (initial_hash: string): Block
 {
     const genesisTransaction = {
         'txIns': [{ 'signature': '', 'txOutId': '', 'txOutIndex': 0 }],
@@ -160,18 +160,21 @@ function  bootstrap_chain  (initial_hash: Int64): Block
     return b;
 }
 
-function find_block_by_hash (b:Block, hash: Int64): Block 
+function find_block_by_hash (b:Block, hash: string): Block 
 {
 
     if (undefined == b) return undefined;
 
-    if (b.hash > hash) return find_block_by_hash(b.left, hash);
-    else if (b.hash < hash) return find_block_by_hash(b.right, hash);
+	//console.log("b.hash:" + b.hash);
+	//console.log("hash:" + hash);
+
+    if (parseInt(b.hash,16) > parseInt(hash,16)) return find_block_by_hash(b.left, hash);
+    else if (parseInt(b.hash,16) < parseInt(hash,16)) return find_block_by_hash(b.right, hash);
 
     return b;
 } 
 
-function insert_block_only_by_hash(r: Block, hash: Int64, newnode: Block)
+function insert_block_only_by_hash(r: Block, hash: string, newnode: Block)
 {
     if (undefined == r) {
         let t: Block = new Block(0, "", "", 0, [], 0, 0, 0,);
@@ -182,12 +185,12 @@ function insert_block_only_by_hash(r: Block, hash: Int64, newnode: Block)
         return [t, t];
     }
     else {
-        if (r.hash >= hash) {
+        if (parseInt(r.hash,16) >= parseInt(hash,16)) {
             let result = insert_block_only_by_hash(r.left, hash, newnode);
             r.left = result[0];
             newnode = result[1];
         }
-        else if (r.hash < hash) {
+        else if (parseInt(r.hash,16) < parseInt(hash,16)) {
             let result = insert_block_only_by_hash(r.right, hash, newnode);
             r.right = result[0];
             newnode = result[1];
@@ -237,9 +240,9 @@ function insert_subtree_by_hash(r: Block, subtree: Block) {
     return r;
 }
 
-function add_block_by_parent_hash(root: Block, parent: Int64, hash: Int64): { root: Block, added: boolean } //need
+function add_block_by_parent_hash(root: Block, parent: string, hash: string): { root: Block, added: boolean } //need
 {
-    // Find the parent block node by parent's Int64
+    // Find the parent block node by parent's string
     let p: Block = find_block_by_hash( root, parent);
     if (undefined == p) {
         console.log("Cannot find parent for ");
@@ -307,7 +310,7 @@ function remove_one_chain(l: IncompleteBlock, to_be_removed: IncompleteBlock): I
     }
 }
 
-function is_incomplete_hash(l: IncompleteBlock, hash: Int64) {
+function is_incomplete_hash(l: IncompleteBlock, hash: string) {
     if (undefined == l) return undefined;
 
     let t: IncompleteBlock = l;
@@ -320,7 +323,7 @@ function is_incomplete_hash(l: IncompleteBlock, hash: Int64) {
     return undefined;
 }
 
-function is_in_incomplete(l: IncompleteBlock, parent_hash: Int64, child_hash: Int64): boolean {
+function is_in_incomplete(l: IncompleteBlock, parent_hash: string, child_hash: string): boolean {
     if (undefined == l) return false;
 
     let t: IncompleteBlock = l;
@@ -334,7 +337,7 @@ function is_in_incomplete(l: IncompleteBlock, parent_hash: Int64, child_hash: In
     return false;
 }
 
-function find_incomplete_block(l: IncompleteBlock, child_hash:Int64):Block
+function find_incomplete_block(l: IncompleteBlock, child_hash:string):Block
 {
 
     if (undefined == l) return undefined;
@@ -350,7 +353,7 @@ function find_incomplete_block(l: IncompleteBlock, child_hash:Int64):Block
     return undefined;
 }
 
-function add_block_to_incomplete(l: IncompleteBlock, parent_hash: Int64, child_hash: Int64)
+function add_block_to_incomplete(l: IncompleteBlock, parent_hash: string, child_hash: string)
 {
 
     if (undefined == l) {
@@ -449,7 +452,7 @@ function print_blocks_by_BlockChainID() {
     }
 }
 
-function get_block_by_hash(hash: Int64) {
+function get_block_by_hash(hash: string) {
     for (let i = 0; i < blockchains.length; i++) {
         let b: Block = find_block_by_hash_and_chain_id(hash, i);
         if (b != undefined) {
@@ -521,7 +524,7 @@ function print_hash_tree(root: Block) {
  * Add the block to the main/incomplete chain
  * Return true if the parent hash is not in any of the main/incomplete chains
  */
-const add_received_block = (chain_id: number, parent: Int64, hash: Int64, nb: NetworkBlock): { added: boolean, isIncomplete: boolean } => 
+const add_received_block = (chain_id: number, parent: string, hash: string, nb: NetworkBlock): { added: boolean, isIncomplete: boolean } => 
 {
     console.log("add_received_block: chain_id:", chain_id);
     let added = false;
@@ -628,7 +631,7 @@ const add_received_block = (chain_id: number, parent: Int64, hash: Int64, nb: Ne
 function add_subtree_to_received_non_full(b: Block, chain_id: number) {
     if (undefined == b) return;
 
-    let hash: Int64 = b.hash;
+    let hash: string = b.hash;
     if (received_non_full_blocks[hash] == received_non_full_blocks.values()[received_non_full_blocks.size - 1] && !have_full_block(chain_id, hash)) {
         received_non_full_blocks[hash] = chain_id;
         total_received_blocks++;
@@ -657,7 +660,7 @@ function find_max_depth( r:Block) {
 
 }
 
-function have_full_block(chain_id: number, hash: Int64): boolean
+function have_full_block(chain_id: number, hash: string): boolean
 {
     let bz: Block = find_block_by_hash(blockchains[chain_id], hash);
     if (undefined != bz && bz. is_full_block) return true;
@@ -665,13 +668,13 @@ function have_full_block(chain_id: number, hash: Int64): boolean
 
 }
 
-function find_block_by_hash_and_chain_id(hash: Int64,  chain_id: number):Block
+function find_block_by_hash_and_chain_id(hash: string,  chain_id: number):Block
 {
     return find_block_by_hash(blockchains[chain_id], hash);
 
 }
 
-function find_incomplete_block_by_hash_and_chain_id(hash: Int64, chain_id: number): Block
+function find_incomplete_block_by_hash_and_chain_id(hash: string, chain_id: number): Block
 {
     return find_incomplete_block(inBlockchains[chain_id], hash);
 }
@@ -693,7 +696,7 @@ function get_deepest_child_by_chain_id( chain_id:number)
     return deepest[chain_id];
 }
 
-function still_waiting_for_full_block(hash: Int64, time_of_now: number): boolean
+function still_waiting_for_full_block(hash: string, time_of_now: number): boolean
 {
     if (waiting_for_full_blocks[hash] == waiting_for_full_blocks.values()[waiting_for_full_blocks.size - 1]) {
         waiting_for_full_blocks[hash] = time_of_now;
@@ -704,7 +707,7 @@ function still_waiting_for_full_block(hash: Int64, time_of_now: number): boolean
 }
 
 
-function add_block_by_parent_hash_and_chain_id(parent_hash: Int64, new_block: Int64, chain_id: number, nb: NetworkBlock)  
+function add_block_by_parent_hash_and_chain_id(parent_hash: string, new_block: string, chain_id: number, nb: NetworkBlock)  
 {
     console.log("add_block_by_parent_hash_and_chain_id:", parent_hash, new_block, chain_id);
 
@@ -719,9 +722,9 @@ function add_block_by_parent_hash_and_chain_id(parent_hash: Int64, new_block: In
 }
 
 
-function get_incomplete_chain_hashes(chain_id: number, time_of_now:number): Int64[]
+function get_incomplete_chain_hashes(chain_id: number, time_of_now:number): string[]
 {
-    let hashes: Int64[] = [];
+    let hashes: string[] = [];
     let t: IncompleteBlock = inBlockchains[chain_id];
     while (undefined != t) {
         let nextt: IncompleteBlock = t.next;
@@ -740,7 +743,7 @@ function get_incomplete_chain_hashes(chain_id: number, time_of_now:number): Int6
 }
 
 
-function set_block_full(chain_id: number, hash: Int64, misc: string)
+function set_block_full(chain_id: number, hash: string, misc: string)
 {
     if (received_non_full_blocks[hash] != received_non_full_blocks.values()[received_non_full_blocks.size])
         received_non_full_blocks.delete(hash);
@@ -783,8 +786,8 @@ function  add_mined_block()
 
 function get_non_full_blocks(time_of_now: number)
 {
-    let nfb = new Map<Int64, number>();
-    let to_remove: Int64[] = [];
+    let nfb = new Map<string, number>();
+    let to_remove: string[] = [];
 
     //received_non_full_blocks.forEach((it, keys) => {
     //    if (Date.now() - itsecond.second > ASK_FOR_FULL_BLOCKS_INDIVIDUAL_EACH_MILLISECONDS) {
@@ -816,7 +819,7 @@ function get_non_full_blocks(time_of_now: number)
 function remove_waiting_blocks(time_of_now:number)
 {
 
-    let to_remove: Int64[] = [];
+    let to_remove: string[] = [];
 
     //for (auto it = waiting_for_full_blocks.begin(); it != waiting_for_full_blocks.end(); it++ ) {
     //    if (time_of_now - it -> second > MAX_WAIT_FOR_FULL_BLOCK_MILLSECONDS)
@@ -864,13 +867,13 @@ function update_blocks_commited_time() {
                     partially_total[j]++;
                     partially_latency[j] += t.nb.time_partial[j] - t.nb.time_mined;
 
-                    if (STORE_BLOCKS && (t.hash % BLOCKS_STORE_FREQUENCY) == 0) {
-                        let filename = FOLDER_BLOCKS + "/" + my_ip + "-" + my_port;
+                    //if (STORE_BLOCKS && (t.hash % BLOCKS_STORE_FREQUENCY) == 0) {
+                    //    let filename = FOLDER_BLOCKS + "/" + my_ip + "-" + my_port;
                         //ofstream file;
                         //file.open(filename, std:: ios_base:: app);
                         //file << "1 " << hex << t -> hash << dec << " " << (t -> nb -> time_partial[j] - t -> nb -> time_mined) << " " << j << endl;
                         //file.close();
-                    }
+                    //}
 
 
                 }
@@ -953,13 +956,13 @@ function update_blocks_commited_time() {
                     commited_total[j]++;
                     commited_latency[j] += t.nb.time_commited[j] - t.nb.time_mined;
 
-                    if (STORE_BLOCKS && (t.hash % BLOCKS_STORE_FREQUENCY) == 0) {
+                    //if (STORE_BLOCKS && (t.hash % BLOCKS_STORE_FREQUENCY) == 0) {
                         //let filename = string(FOLDER_BLOCKS) + "/" + my_ip + "-" + to_string(my_port);
                         //ofstream file;
                         //file.open(filename, std:: ios_base:: app);
                         //file << "2 " << hex << t -> hash << dec << " " << (t -> nb -> time_commited[j] - t -> nb -> time_mined) << " " << j << endl;
                         //file.close();
-                    }
+                    //}
                 }
                 t = t.parent;
             }
@@ -1058,8 +1061,8 @@ const hasValidHash = (block: Block): boolean => {
 };
 
 const hashMatchesBlockContent = (block: Block): boolean => {
-    const Int64: string = calculateHashForBlock(block);
-    return Int64 === block.hash;
+    const string: string = calculateHashForBlock(block);
+    return string === block.hash;
 };
 
 const hashMatchesDifficulty = (hash: string, difficulty: number): boolean => {

@@ -75,7 +75,7 @@ function mine_new_block(bc) {
             trailing_block = b;
             trailing_id = i;
         }
-        leaves.push(verify_1.blockhash_to_string(b.hash));
+        leaves.push(b.hash);
     }
     // Make a complete binary tree
     let tot_size_add = Math.pow(2, Math.ceil(Math.log(leaves.length) / Math.log(2))) - leaves.length;
@@ -89,10 +89,10 @@ function mine_new_block(bc) {
     // Determine the chain where it should go
     let chain_id = verify_1.get_chain_id_from_hash(h);
     // Determine the new block
-    let new_block = verify_1.string_to_blockhash(h);
+    let new_block = h;
     // Create file holding the whole block
     // Supposedly composed of transactions
-    let no_txs = transaction_1.create_transaction_block(new_block, FOLDER_BLOCKS + "/" + my_ip + "-" + my_port + "/" + verify_1.blockhash_to_string(new_block));
+    let no_txs = transaction_1.create_transaction_block(new_block, FOLDER_BLOCKS + "/" + my_ip + "-" + my_port + "/" + new_block);
     if (0 == no_txs) {
         console.log("Cannot create the file with transaction");
         return;
@@ -134,6 +134,8 @@ function mine_new_block(bc) {
         console.log("Mined block on chain", chain_id);
     }
     // Set block flag as full block
+    console.log("new_block:" + new_block);
+    console.log("chain_id:" + chain_id);
     let bz = blockchain_1.find_block_by_hash_and_chain_id(new_block, chain_id);
     if (null != bz && null != bz.nb) {
         console.log("Find new block by hash :", bz.hash, "result: success");

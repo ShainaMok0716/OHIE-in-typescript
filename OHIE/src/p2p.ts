@@ -65,8 +65,8 @@ const initConnection = (ws: WebSocket) => {
 
     // Get full block s
     setInterval(()=> { 
-        const blocks: Map<Int64, number> = get_non_full_blocks( Date.now() );
-        blocks.forEach((value: number, key: Int64) => {
+        const blocks: Map<string, number> = get_non_full_blocks( Date.now() );
+        blocks.forEach((value: number, key: string) => {
             broadcast(create__got_full_block(key, value));
         }); 
     }, config.ASK_FOR_FULL_BLOCKS_EACH_MILLISECONDS);
@@ -98,6 +98,7 @@ const initMessageHandler = (ws: WebSocket) => {
 
         try {
             const message: Message = JSONToObject<Message>(data);
+			console.log("message.type:" + message.type);
             if (message === null) {
                 console.log('could not parse received JSON message: ' + data);
                 return;

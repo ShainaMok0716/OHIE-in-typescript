@@ -1,6 +1,7 @@
 ﻿import * as CryptoJS from 'crypto-js';
 import * as Int64 from 'node-int64';
 import { Server } from 'ws';
+import { UInt256, U256 } from 'uint256';
 
 import {
 	getCoinbaseTransaction, isValidAddress, processTransactions, Transaction, UnspentTxOut, create_transaction_block
@@ -8,6 +9,9 @@ import {
 import {
 	get_server_folder
 } from './p2p';
+import {
+	hexToBinary
+} from './util';
 
 import {
     NetworkBlock, Block, getBlockchain, getUnspentTxOuts, getLatestBlock, getDifficulty, findBlock, addBlockToChain,
@@ -16,7 +20,7 @@ import {
 import { createTransaction, findUnspentTxOuts, getBalance, getPrivateFromWallet, getPublicFromWallet } from './wallet';
 import { broadcastLatest, broadCastTransactionPool,send_block_to_peers } from './p2p';
 import { addToTransactionPool, getTransactionPool, updateTransactionPool } from './transactionPool';
-import { blockhash_to_string, string_to_blockhash, compute_merkle_tree_root,compute_merkle_proof,get_chain_id_from_hash } from './verify';
+import { compute_merkle_tree_root,compute_merkle_proof,get_chain_id_from_hash } from './verify';
 import config from './Configuration';
 
 const getCurrentTimestamp = (): number => Math.round(new Date().getTime() / 1000);
@@ -72,7 +76,7 @@ export {
 // Below are the functions that move from miner.cpp
 let total_mined = 0;
 
-export function mine_new_block(bc: Block[]) : Int64
+export function mine_new_block(bc: Block[]) : string
 {
   	//std::unique_lock<std::mutex> l(bc->lock);
 	//bc->can_write.wait( l, [bc](){return !bc->locker_write;});
@@ -100,7 +104,7 @@ export function mine_new_block(bc: Block[]) : Int64
 			trailing_id = i;
 		}
 
-		leaves.push(blockhash_to_string(b.hash));
+		leaves.push(b.hash);
 	}
 
 	// Make a complete binary tree
@@ -118,11 +122,11 @@ export function mine_new_block(bc: Block[]) : Int64
 	let chain_id : Int64 = get_chain_id_from_hash(h);
 
 	// Determine the new block
-	let new_block: Int64 = string_to_blockhash( h );
+	let new_block: string = h;
 
 	// Create file holding the whole block
 	// Supposedly composed of transactions
-	let no_txs : Int64 = create_transaction_block( new_block , FOLDER_BLOCKS + "/" + my_ip + "-" + my_port + "/" + blockhash_to_string( new_block ) ); 
+	let no_txs : Int64 = create_transaction_block( new_block , FOLDER_BLOCKS + "/" + my_ip + "-" + my_port + "/" +  new_block ); 
 	if( 0 == no_txs  ) {
 		console.log("Cannot create the file with transaction");
 		return;
@@ -170,6 +174,8 @@ export function mine_new_block(bc: Block[]) : Int64
 	}
 
 	// Set block flag as full block
+	console.log("new_block:"+new_block);
+	console.log("chain_id:"+chain_id);
 	let bz: Block = find_block_by_hash_and_chain_id(new_block, chain_id);
 	if (null != bz && null != bz.nb) {
 		console.log("Find new block by hash :", bz.hash, "result: success");

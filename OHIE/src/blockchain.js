@@ -141,9 +141,11 @@ function bootstrap_chain(initial_hash) {
 function find_block_by_hash(b, hash) {
     if (undefined == b)
         return undefined;
-    if (b.hash > hash)
+    //console.log("b.hash:" + b.hash);
+    //console.log("hash:" + hash);
+    if (parseInt(b.hash, 16) > parseInt(hash, 16))
         return find_block_by_hash(b.left, hash);
-    else if (b.hash < hash)
+    else if (parseInt(b.hash, 16) < parseInt(hash, 16))
         return find_block_by_hash(b.right, hash);
     return b;
 }
@@ -158,12 +160,12 @@ function insert_block_only_by_hash(r, hash, newnode) {
         return [t, t];
     }
     else {
-        if (r.hash >= hash) {
+        if (parseInt(r.hash, 16) >= parseInt(hash, 16)) {
             let result = insert_block_only_by_hash(r.left, hash, newnode);
             r.left = result[0];
             newnode = result[1];
         }
-        else if (r.hash < hash) {
+        else if (parseInt(r.hash, 16) < parseInt(hash, 16)) {
             let result = insert_block_only_by_hash(r.right, hash, newnode);
             r.right = result[0];
             newnode = result[1];
@@ -210,7 +212,7 @@ function insert_subtree_by_hash(r, subtree) {
 }
 exports.insert_subtree_by_hash = insert_subtree_by_hash;
 function add_block_by_parent_hash(root, parent, hash) {
-    // Find the parent block node by parent's Int64
+    // Find the parent block node by parent's string
     let p = find_block_by_hash(root, parent);
     if (undefined == p) {
         console.log("Cannot find parent for ");
@@ -711,13 +713,13 @@ function update_blocks_commited_time() {
                     t.nb.time_partial[j] = time_of_now;
                     partially_total[j]++;
                     partially_latency[j] += t.nb.time_partial[j] - t.nb.time_mined;
-                    if (STORE_BLOCKS && (t.hash % BLOCKS_STORE_FREQUENCY) == 0) {
-                        let filename = FOLDER_BLOCKS + "/" + my_ip + "-" + my_port;
-                        //ofstream file;
-                        //file.open(filename, std:: ios_base:: app);
-                        //file << "1 " << hex << t -> hash << dec << " " << (t -> nb -> time_partial[j] - t -> nb -> time_mined) << " " << j << endl;
-                        //file.close();
-                    }
+                    //if (STORE_BLOCKS && (t.hash % BLOCKS_STORE_FREQUENCY) == 0) {
+                    //    let filename = FOLDER_BLOCKS + "/" + my_ip + "-" + my_port;
+                    //ofstream file;
+                    //file.open(filename, std:: ios_base:: app);
+                    //file << "1 " << hex << t -> hash << dec << " " << (t -> nb -> time_partial[j] - t -> nb -> time_mined) << " " << j << endl;
+                    //file.close();
+                    //}
                 }
                 t = t.parent;
             }
@@ -785,13 +787,13 @@ function update_blocks_commited_time() {
                     t.nb.time_commited[j] = time_of_now;
                     commited_total[j]++;
                     commited_latency[j] += t.nb.time_commited[j] - t.nb.time_mined;
-                    if (STORE_BLOCKS && (t.hash % BLOCKS_STORE_FREQUENCY) == 0) {
-                        //let filename = string(FOLDER_BLOCKS) + "/" + my_ip + "-" + to_string(my_port);
-                        //ofstream file;
-                        //file.open(filename, std:: ios_base:: app);
-                        //file << "2 " << hex << t -> hash << dec << " " << (t -> nb -> time_commited[j] - t -> nb -> time_mined) << " " << j << endl;
-                        //file.close();
-                    }
+                    //if (STORE_BLOCKS && (t.hash % BLOCKS_STORE_FREQUENCY) == 0) {
+                    //let filename = string(FOLDER_BLOCKS) + "/" + my_ip + "-" + to_string(my_port);
+                    //ofstream file;
+                    //file.open(filename, std:: ios_base:: app);
+                    //file << "2 " << hex << t -> hash << dec << " " << (t -> nb -> time_commited[j] - t -> nb -> time_mined) << " " << j << endl;
+                    //file.close();
+                    //}
                 }
                 t = t.parent;
             }
@@ -878,8 +880,8 @@ const hasValidHash = (block) => {
     return true;
 };
 const hashMatchesBlockContent = (block) => {
-    const Int64 = calculateHashForBlock(block);
-    return Int64 === block.hash;
+    const string = calculateHashForBlock(block);
+    return string === block.hash;
 };
 const hashMatchesDifficulty = (hash, difficulty) => {
     const hashInBinary = util_1.hexToBinary(hash);

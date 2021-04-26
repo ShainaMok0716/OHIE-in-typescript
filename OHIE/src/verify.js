@@ -1,22 +1,29 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.get_chain_id_from_hash = exports.compute_merkle_proof = exports.compute_merkle_tree_root = exports.blockhash_to_string = exports.verify_merkle_proof = exports.string_to_blockhash = void 0;
+exports.get_chain_id_from_hash = exports.compute_merkle_proof = exports.compute_merkle_tree_root = exports.verify_merkle_proof = exports.string_to_blockhash = void 0;
 const CryptoJS = require("crypto-js");
 const Configuration_1 = require("./Configuration");
 function blockhash_to_string(b) {
-    let hash = b.toString(16);
+    /*
+    console.log("Before ---------->" + b);
+    let hash: string = b.toString(16);
+    console.log("After ---------->" + hash);
+        
     //if ( hash.length < 2 * sizeOf(BlockHash) )
     //	hash = string(2 * sizeOf(BlockHash) - hash.length, '0').append( hash );
-    let newhash = padLeft(hash, '0', 2 * 8);
+    let newhash:string = padLeft(hash, '0', 64);
+    
     return newhash;
+    */
+    return "";
 }
-exports.blockhash_to_string = blockhash_to_string;
 function padLeft(text, padChar, size) {
     return (String(padChar).repeat(size) + text).substr((size * -1), size);
 }
 function string_to_blockhash(h) {
     //return stoull( h.substr(0, 2*sizeof(BlockHash)), nullptr, 16);
-    return parseInt(h.substring(0, 2 * 8), 16);
+    //return parseInt(h.substring(0, 4 * 8),16);
+    return parseInt(h, 16);
 }
 exports.string_to_blockhash = string_to_blockhash;
 function compute_merkle_tree_root(leaves) {
@@ -61,7 +68,8 @@ function get_chain_id_from_hash(h) {
 }
 exports.get_chain_id_from_hash = get_chain_id_from_hash;
 function verify_merkle_proof(proof, bh, root, index) {
-    let h = blockhash_to_string(bh);
+    //let h: string = blockhash_to_string( bh );
+    let h = bh;
     if (proof[0] != h && proof[1] != h)
         return false;
     let i = 1;

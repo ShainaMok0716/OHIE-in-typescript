@@ -153,7 +153,7 @@ function handle_full_block(ws, data) {
                 console.log("033[31;1mChain_id incorrect for the new block 033[0m\n");
             }
             // Verify blockhash is correct
-            if (verify_1.string_to_blockhash(h) != n.hash) {
+            if (h != n.hash) {
                 console.log("033[31;1mBlockhash is incorrect 033[0m\n");
             }
             // Verify the new block chain Merkle proof

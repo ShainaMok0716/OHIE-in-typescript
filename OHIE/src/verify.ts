@@ -6,13 +6,18 @@ import {
 
 function blockhash_to_string ( b: BlockHash): string
 {
+	/*
+	console.log("Before ---------->" + b);
 	let hash: string = b.toString(16);
-	
+	console.log("After ---------->" + hash);
+		
 	//if ( hash.length < 2 * sizeOf(BlockHash) )
 	//	hash = string(2 * sizeOf(BlockHash) - hash.length, '0').append( hash );
-	let newhash:string = padLeft(hash, '0', 2 * 8);
+	let newhash:string = padLeft(hash, '0', 64);
 	
 	return newhash;
+	*/
+	return "";
 }
 
 function padLeft(text:string, padChar:string, size:number): string 
@@ -23,7 +28,8 @@ function padLeft(text:string, padChar:string, size:number): string
 export function string_to_blockhash( h: string ){
 
 	//return stoull( h.substr(0, 2*sizeof(BlockHash)), nullptr, 16);
-	return parseInt(h.substring(0, 2 * 8),16);
+	//return parseInt(h.substring(0, 4 * 8),16);
+	return parseInt( h , 16 );
 }
 
 function compute_merkle_tree_root ( leaves: string[] ): string
@@ -79,7 +85,8 @@ function get_chain_id_from_hash(h: string): number
 
 export function verify_merkle_proof( proof:string[] ,  bh:BlockHash,  root:string, index:number )
 {
-	let h: string = blockhash_to_string( bh );
+	//let h: string = blockhash_to_string( bh );
+	let h: string = bh;
 	if ( proof[0] != h && proof[1] != h)	return false;
 
 	let i: number = 1;
@@ -109,4 +116,4 @@ export function verify_merkle_proof( proof:string[] ,  bh:BlockHash,  root:strin
 	return true;
 }
 
-export {blockhash_to_string,compute_merkle_tree_root,compute_merkle_proof, get_chain_id_from_hash};
+export {compute_merkle_tree_root,compute_merkle_proof, get_chain_id_from_hash};
