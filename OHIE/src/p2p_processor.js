@@ -33,7 +33,6 @@ function process_buffer(ws, message) {
 }
 exports.process_buffer = process_buffer;
 function handle_ask_block(ws, data) {
-    data = p2p_1.JSONToObject(data);
     // First check if it is in the main chain
     let b = blockchain_1.find_block_by_hash_and_chain_id(data.hash, data.chain_id);
     // If not, check in the incomplete chains
@@ -66,12 +65,14 @@ function handle_process_block(ws, data) {
 exports.handle_process_block = handle_process_block;
 ;
 function handle_got_full_block(ws, data) {
+    data = p2p_1.JSONToObject(data);
     // Check if this node has the full block, and if so send to the asking peer
     if (blockchain_1.have_full_block(data.chain_id, data.hash)) {
         p2p_1.write_to_one_peer(ws, requests_1.create__have_full_block(data.chain_id, data.hash));
     }
 }
 function handle_have_full_block(ws, data) {
+    data = p2p_1.JSONToObject(data);
     // Make sure you still DON't have the full block
     if (blockchain_1.have_full_block(data.chain_id, data.hash) == false)
         return;
@@ -82,6 +83,7 @@ function handle_have_full_block(ws, data) {
     }
 }
 function handle_ask_full_block(ws, data) {
+    data = p2p_1.JSONToObject(data);
     // Make sure you have the block 
     if (blockchain_1.have_full_block(data.chain_id, data.hash))
         return;
@@ -105,6 +107,7 @@ function handle_ask_full_block(ws, data) {
     }
 }
 function handle_full_block(ws, data) {
+    data = p2p_1.JSONToObject(data);
     // Make sure the block does not exist
     if (!blockchain_1.have_full_block(data.chain_id, data.hash)) {
         return;

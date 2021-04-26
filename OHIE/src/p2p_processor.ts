@@ -41,7 +41,6 @@ export function process_buffer(ws, message) {
 
 export function handle_ask_block(ws, data) {
 
-    data = JSONToObject(data);
     // First check if it is in the main chain
     let b = find_block_by_hash_and_chain_id(data.hash, data.chain_id);
 
