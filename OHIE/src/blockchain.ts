@@ -449,14 +449,30 @@ function print_blocks_by_BlockChainID() {
     }
 }
 
+function get_block_by_hash(hash: Int64) {
+    for (let i = 0; i < blockchains.length; i++) {
+        let b: Block = find_block_by_hash_and_chain_id(hash, i);
+        if (b != undefined) {
+            console.log("Print Childs");
+            print_blocks(b);
+            console.log("Print Parent");
+            print_parent_blocks(b);
+            return find_block_by_hash_and_chain_id(hash, i);
+            break;
+        }
+    }
+}
+
+function print_parent_blocks(root: Block) {
+    if (undefined == root) return;
+
+    print_parent_blocks(root.parent);
+    console.log(" Hash:", root.hash, "Depth:", root.nb.depth, "Rank:", root.nb.rank, " NextRank:", root.nb.next_rank, " | time_partial:", root.nb.time_partial, " | time_commited:", root.nb.time_commited);
+}
+
 function  print_blocks( root:Block)
 {
     if (undefined == root) return;
-
-
-    //print_blocks(root.left);
-    //console.log(" Hash:", root.hash, "Depth:", root.nb.depth, "Rank:", root.nb.rank, " NextRank:", root.nb.next_rank);
-    //print_blocks(root.right);
 
     print_blocks(root.child);
     console.log(" Hash:", root.hash, "Depth:", root.nb.depth, "Rank:", root.nb.rank, " NextRank:", root.nb.next_rank, " | time_partial:", root.nb.time_partial,  " | time_commited:", root.nb.time_commited);
@@ -1143,6 +1159,6 @@ export {
     find_number_of_nodes, remove_one_chain, is_incomplete_hash, is_in_incomplete, find_incomplete_block, add_block_to_incomplete, find_number_of_incomplete_blocks,
     add_subtree_to_received_non_full, find_max_depth, add_received_block, 
     find_block_by_hash_and_chain_id, find_incomplete_block_by_hash_and_chain_id, get_incomplete_chain, get_deepest_child_by_chain_id, have_full_block, still_waiting_for_full_block, add_block_by_parent_hash_and_chain_id,
-    get_incomplete_chain_hashes, get_non_full_blocks, remove_waiting_blocks, set_block_full, add_mined_block, update_blocks_commited_time, print_blocks_by_BlockChainID, print_all_incomplete_chains
+    get_incomplete_chain_hashes, get_non_full_blocks, remove_waiting_blocks, set_block_full, add_mined_block, update_blocks_commited_time, print_blocks_by_BlockChainID, print_all_incomplete_chains, get_block_by_hash
 
 };

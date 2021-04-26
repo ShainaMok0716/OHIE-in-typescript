@@ -3,7 +3,7 @@ import * as express from 'express';
 import * as _ from 'lodash';
 import {
     Block, getAccountBalance,
-    getBlockchain, getMyUnspentTransactionOutputs, getUnspentTxOuts, sendTransaction, test, initBlockChains, print_blocks_by_BlockChainID
+    getBlockchain, getMyUnspentTransactionOutputs, getUnspentTxOuts, sendTransaction, test, initBlockChains, print_blocks_by_BlockChainID, find_block_by_hash, get_block_by_hash
 } from './blockchain';
 import {
     generateNextBlock, generatenextBlockWithTransaction, generateRawNextBlock, mine_new_block
@@ -84,6 +84,12 @@ const initHttpServer = (myHttpPort: number) => {
         } else {
             res.send(newBlock);
         }
+    });
+
+    app.post('/print_block_by_hash', (req, res) => {
+        console.log("Request to print blocks by hash ", req.body.hash);
+        const targetBlock: Block = get_block_by_hash(req.body.hash);
+        res.send({ 'target ChainID': targetBlock.chainID });
     });
 
     app.post('/start_mine', (req, res) => {
@@ -170,6 +176,7 @@ const initHttpServer = (myHttpPort: number) => {
     app.get('/printBlocks', (req, res) => {
         res.send(print_blocks_by_BlockChainID());
     });
+
 
     app.get('/printIncompleteBlocks', (req, res) => {
         res.send(print_blocks_by_BlockChainID());

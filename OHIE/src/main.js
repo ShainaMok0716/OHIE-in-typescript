@@ -67,6 +67,11 @@ const initHttpServer = (myHttpPort) => {
             res.send(newBlock);
         }
     });
+    app.post('/print_block_by_hash', (req, res) => {
+        console.log("Request to print blocks by hash ", req.body.hash);
+        const targetBlock = blockchain_1.get_block_by_hash(req.body.hash);
+        res.send({ 'target ChainID': targetBlock.chainID });
+    });
     app.post('/start_mine', (req, res) => {
         console.log("Request to mine ", req.body.times);
         let returnStr = "";

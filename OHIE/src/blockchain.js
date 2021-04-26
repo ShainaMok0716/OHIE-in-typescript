@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.print_all_incomplete_chains = exports.print_blocks_by_BlockChainID = exports.update_blocks_commited_time = exports.add_mined_block = exports.set_block_full = exports.remove_waiting_blocks = exports.get_non_full_blocks = exports.get_incomplete_chain_hashes = exports.add_block_by_parent_hash_and_chain_id = exports.still_waiting_for_full_block = exports.have_full_block = exports.get_deepest_child_by_chain_id = exports.get_incomplete_chain = exports.find_incomplete_block_by_hash_and_chain_id = exports.find_block_by_hash_and_chain_id = exports.add_received_block = exports.find_max_depth = exports.add_subtree_to_received_non_full = exports.find_number_of_incomplete_blocks = exports.add_block_to_incomplete = exports.find_incomplete_block = exports.is_in_incomplete = exports.is_incomplete_hash = exports.remove_one_chain = exports.find_number_of_nodes = exports.add_block_by_parent_hash = exports.insert_subtree_by_hash = exports.insert_one_node = exports.insert_block_only_by_hash = exports.find_block_by_hash = exports.initBlockChains = exports.test = exports.findBlock = exports.getDifficulty = exports.addBlockToChain = exports.replaceChain = exports.isValidBlockStructure = exports.getAccountBalance = exports.getMyUnspentTransactionOutputs = exports.handleReceivedTransaction = exports.sendTransaction = exports.getLatestBlock = exports.getUnspentTxOuts = exports.getBlockchain = exports.Block = exports.NetworkBlock = void 0;
+exports.get_block_by_hash = exports.print_all_incomplete_chains = exports.print_blocks_by_BlockChainID = exports.update_blocks_commited_time = exports.add_mined_block = exports.set_block_full = exports.remove_waiting_blocks = exports.get_non_full_blocks = exports.get_incomplete_chain_hashes = exports.add_block_by_parent_hash_and_chain_id = exports.still_waiting_for_full_block = exports.have_full_block = exports.get_deepest_child_by_chain_id = exports.get_incomplete_chain = exports.find_incomplete_block_by_hash_and_chain_id = exports.find_block_by_hash_and_chain_id = exports.add_received_block = exports.find_max_depth = exports.add_subtree_to_received_non_full = exports.find_number_of_incomplete_blocks = exports.add_block_to_incomplete = exports.find_incomplete_block = exports.is_in_incomplete = exports.is_incomplete_hash = exports.remove_one_chain = exports.find_number_of_nodes = exports.add_block_by_parent_hash = exports.insert_subtree_by_hash = exports.insert_one_node = exports.insert_block_only_by_hash = exports.find_block_by_hash = exports.initBlockChains = exports.test = exports.findBlock = exports.getDifficulty = exports.addBlockToChain = exports.replaceChain = exports.isValidBlockStructure = exports.getAccountBalance = exports.getMyUnspentTransactionOutputs = exports.handleReceivedTransaction = exports.sendTransaction = exports.getLatestBlock = exports.getUnspentTxOuts = exports.getBlockchain = exports.Block = exports.NetworkBlock = void 0;
 const CryptoJS = require("crypto-js");
 const _ = require("lodash");
 const p2p_1 = require("./p2p");
@@ -394,12 +394,29 @@ function print_blocks_by_BlockChainID() {
     }
 }
 exports.print_blocks_by_BlockChainID = print_blocks_by_BlockChainID;
+function get_block_by_hash(hash) {
+    for (let i = 0; i < blockchains.length; i++) {
+        let b = find_block_by_hash_and_chain_id(hash, i);
+        if (b != undefined) {
+            console.log("Print Childs");
+            print_blocks(b);
+            console.log("Print Parent");
+            print_parent_blocks(b);
+            return find_block_by_hash_and_chain_id(hash, i);
+            break;
+        }
+    }
+}
+exports.get_block_by_hash = get_block_by_hash;
+function print_parent_blocks(root) {
+    if (undefined == root)
+        return;
+    print_parent_blocks(root.parent);
+    console.log(" Hash:", root.hash, "Depth:", root.nb.depth, "Rank:", root.nb.rank, " NextRank:", root.nb.next_rank, " | time_partial:", root.nb.time_partial, " | time_commited:", root.nb.time_commited);
+}
 function print_blocks(root) {
     if (undefined == root)
         return;
-    //print_blocks(root.left);
-    //console.log(" Hash:", root.hash, "Depth:", root.nb.depth, "Rank:", root.nb.rank, " NextRank:", root.nb.next_rank);
-    //print_blocks(root.right);
     print_blocks(root.child);
     console.log(" Hash:", root.hash, "Depth:", root.nb.depth, "Rank:", root.nb.rank, " NextRank:", root.nb.next_rank, " | time_partial:", root.nb.time_partial, " | time_commited:", root.nb.time_commited);
 }
