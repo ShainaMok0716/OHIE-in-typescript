@@ -460,7 +460,10 @@ function get_block_by_hash(hash: string) {
             print_blocks(b);
             console.log("Print Parent");
             print_parent_blocks(b);
-            return find_block_by_hash_and_chain_id(hash, i);
+			//Assign the Chain ID for print out
+			b.chainID = i;
+            //return find_block_by_hash_and_chain_id(hash, i);
+			return b;
             break;
         }
     }

@@ -84,11 +84,11 @@ const initHttpServer = (myHttpPort) => {
                 else {
                     returnStr += newBlockChainID.toString() + "|";
                 }
-            }, 100 * i);
+            }, 1000 * i);
         }
         setTimeout(function () {
             res.send(returnStr);
-        }, 100 * req.body.times + 1);
+        }, 1000 * req.body.times + 1);
     });
     app.get('/balance', (req, res) => {
         const balance = blockchain_1.getAccountBalance();

@@ -105,12 +105,12 @@ const initHttpServer = (myHttpPort: number) => {
                     returnStr += newBlockChainID.toString() + "|"
                 }
 
-            }, 100*i);
+            }, 1000*i);
         }
 
         setTimeout(function () {
             res.send(returnStr);
-        }, 100 * req.body.times + 1);
+        }, 1000 * req.body.times + 1);
 
     });
 
