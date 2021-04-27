@@ -505,6 +505,7 @@ const add_received_block = (chain_id, parent, hash, nb) => {
             bz.nb = new block_1.NetworkBlock();
             bz.nb = nb;
             added = true;
+            bz.is_full_block = true;
             //  Update deepest
             let old_depth = deepest[chain_id].nb.depth;
             let deep_last = find_max_depth(bz);

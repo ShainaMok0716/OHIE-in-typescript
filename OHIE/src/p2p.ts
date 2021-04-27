@@ -3,7 +3,7 @@ import {Server} from 'ws';
 import {
     addBlockToChain, Block, getBlockchain, getLatestBlock, handleReceivedTransaction, isValidBlockStructure,update_blocks_commited_time, 
     replaceChain, NetworkBlock, BlockHash,
-    get_incomplete_chain_hashes, get_non_full_blocks
+    get_incomplete_chain_hashes, get_non_full_blocks, have_full_block
 } from './blockchain';
 import {Transaction} from './transaction';
 import {getTransactionPool} from './transactionPool';
@@ -257,6 +257,10 @@ export function send_block_to_one_peer(ws, b){
 
 export function send_block_to_peers(nb){
     broadcast(create__process_block(nb));
+}
+
+export function send_havefullblock_to_peers(chainid: number, hash: Int64) {
+    broadcast(create__have_full_block(chainid, hash));
 }
 
 let bytes_received = 0;

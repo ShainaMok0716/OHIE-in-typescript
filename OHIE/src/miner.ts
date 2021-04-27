@@ -1,7 +1,6 @@
 ﻿import * as CryptoJS from 'crypto-js';
 import * as Int64 from 'node-int64';
 import { Server } from 'ws';
-import { UInt256, U256 } from 'uint256';
 
 import {
 	getCoinbaseTransaction, isValidAddress, processTransactions, Transaction, UnspentTxOut, create_transaction_block
@@ -18,7 +17,7 @@ import {
 	get_deepest_child_by_chain_id, add_block_by_parent_hash_and_chain_id, find_block_by_hash_and_chain_id,add_mined_block
 } from './blockchain';
 import { createTransaction, findUnspentTxOuts, getBalance, getPrivateFromWallet, getPublicFromWallet } from './wallet';
-import { broadcastLatest, broadCastTransactionPool,send_block_to_peers } from './p2p';
+import { broadcastLatest, broadCastTransactionPool, send_block_to_peers, send_havefullblock_to_peers } from './p2p';
 import { addToTransactionPool, getTransactionPool, updateTransactionPool } from './transactionPool';
 import { compute_merkle_tree_root,compute_merkle_proof,get_chain_id_from_hash } from './verify';
 import config from './Configuration';
@@ -192,6 +191,7 @@ export function mine_new_block(bc: Block[]) : string
 	// Send the block to peers
 	send_block_to_peers(nb);
 
+	send_havefullblock_to_peers(chain_id, bz.hash);
 	//bc->locker_write = false;
 	//l.unlock();
 	//bc->can_write.notify_one();

@@ -591,7 +591,7 @@ const add_received_block = (chain_id: number, parent: string, hash: string, nb: 
             bz.nb = new NetworkBlock();
             bz.nb = nb;
             added = true;
-
+            bz.is_full_block = true;
             //  Update deepest
             let old_depth: number = deepest[chain_id].nb.depth;
             let deep_last: Block = find_max_depth(bz);
@@ -872,10 +872,10 @@ function update_blocks_commited_time() {
 
                     //if (STORE_BLOCKS && (t.hash % BLOCKS_STORE_FREQUENCY) == 0) {
                     //    let filename = FOLDER_BLOCKS + "/" + my_ip + "-" + my_port;
-                        //ofstream file;
-                        //file.open(filename, std:: ios_base:: app);
-                        //file << "1 " << hex << t -> hash << dec << " " << (t -> nb -> time_partial[j] - t -> nb -> time_mined) << " " << j << endl;
-                        //file.close();
+                    //ofstream file;
+                    //file.open(filename, std:: ios_base:: app);
+                    //file << "1 " << hex << t -> hash << dec << " " << (t -> nb -> time_partial[j] - t -> nb -> time_mined) << " " << j << endl;
+                    //file.close();
                     //}
 
 

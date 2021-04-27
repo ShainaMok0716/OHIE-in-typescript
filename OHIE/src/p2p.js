@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.additional_verified_transaction = exports.add_bytes_received = exports.send_block_to_peers = exports.send_block_to_one_peer = exports.write_to_one_peer = exports.write_to_all_peers = exports.get_server_folder = exports.getSockets = exports.initP2PServer = exports.broadCastTransactionPool = exports.broadcastLatest = exports.connectToPeers = exports.broadcast = exports.JSONToObject = exports.triggerUpdateCommitInterval = exports.MessageType = void 0;
+exports.additional_verified_transaction = exports.add_bytes_received = exports.send_havefullblock_to_peers = exports.send_block_to_peers = exports.send_block_to_one_peer = exports.write_to_one_peer = exports.write_to_all_peers = exports.get_server_folder = exports.getSockets = exports.initP2PServer = exports.broadCastTransactionPool = exports.broadcastLatest = exports.connectToPeers = exports.broadcast = exports.JSONToObject = exports.triggerUpdateCommitInterval = exports.MessageType = void 0;
 const WebSocket = require("ws");
 const blockchain_1 = require("./blockchain");
 const transactionPool_1 = require("./transactionPool");
@@ -236,6 +236,10 @@ function send_block_to_peers(nb) {
     exports.broadcast(requests_1.create__process_block(nb));
 }
 exports.send_block_to_peers = send_block_to_peers;
+function send_havefullblock_to_peers(chainid, hash) {
+    exports.broadcast(requests_1.create__have_full_block(chainid, hash));
+}
+exports.send_havefullblock_to_peers = send_havefullblock_to_peers;
 let bytes_received = 0;
 let bytes_txs_received = 0;
 let no_verified_transactions = 0;

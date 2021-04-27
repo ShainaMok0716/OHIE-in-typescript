@@ -135,8 +135,8 @@ function mine_new_block(bc) {
         console.log("Mined block on chain", chain_id);
     }
     // Set block flag as full block
-    console.log("new_block:" + new_block);
-    console.log("chain_id:" + chain_id);
+    //console.log("new_block:"+new_block);
+    //console.log("chain_id:"+chain_id);
     let bz = blockchain_1.find_block_by_hash_and_chain_id(new_block, chain_id);
     if (null != bz && null != bz.nb) {
         console.log("Find new block by hash :", bz.hash, "result: success");
@@ -149,6 +149,7 @@ function mine_new_block(bc) {
     blockchain_1.add_mined_block();
     // Send the block to peers
     p2p_1.send_block_to_peers(nb);
+    p2p_1.send_havefullblock_to_peers(chain_id, bz.hash);
     //bc->locker_write = false;
     //l.unlock();
     //bc->can_write.notify_one();
