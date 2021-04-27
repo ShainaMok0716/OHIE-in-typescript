@@ -1,7 +1,6 @@
 ﻿import * as CryptoJS from 'crypto-js';
 import * as Int64 from 'node-int64';
 import { Server } from 'ws';
-import { UInt256, U256 } from 'uint256';
 
 import {
 	getCoinbaseTransaction, isValidAddress, processTransactions, Transaction, UnspentTxOut, create_transaction_block
