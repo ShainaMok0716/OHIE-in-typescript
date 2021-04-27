@@ -138,7 +138,8 @@ export function mine_new_block(bc: Block[]) : string
 	// Last block of the chain where new block will be mined
 	let parent: Block = get_deepest_child_by_chain_id( chain_id );
 
-	console.log("Get parent block:", parent.hash, "| chainid:", parent.chainID);
+	//console.log("Get parent block:", parent.hash, "| chainid:", parent.chainID);
+	console.log("Get parent block:", parent.hash, "| chainid:", chain_id);
 	let nb: NetworkBlock = new NetworkBlock();
 	nb.chain_id = chain_id;
 	nb.parent = parent.hash;
@@ -174,8 +175,8 @@ export function mine_new_block(bc: Block[]) : string
 	}
 
 	// Set block flag as full block
-	console.log("new_block:"+new_block);
-	console.log("chain_id:"+chain_id);
+	//console.log("new_block:"+new_block);
+	//console.log("chain_id:"+chain_id);
 	let bz: Block = find_block_by_hash_and_chain_id(new_block, chain_id);
 	if (null != bz && null != bz.nb) {
 		console.log("Find new block by hash :", bz.hash, "result: success");
